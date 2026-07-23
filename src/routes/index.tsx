@@ -10,7 +10,7 @@ export const Route = createFileRoute("/")({
       { title: "eFootball Cup — Live Tournament Center" },
       { name: "description", content: "Live scores, group standings, brackets and player awards for the eFootball tournament." },
       { property: "og:title", content: "eFootball Cup — Live Tournament Center" },
-      { property: "og:description", content: "Live scores, standings, brackets and awards." },
+      { property: "og:description", content: "Live scores, group standings, brackets and player awards for the eFootball tournament." },
     ],
   }),
   component: HomePage,
