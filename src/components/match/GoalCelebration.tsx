@@ -23,8 +23,8 @@ export function GoalCelebration() {
   }, [data]);
 
   useEffect(() => {
-    const channel = supabase
-      .channel("goal-celebration")
+    const channel = supabase.channel(`goal-celebration-${Math.random().toString(36).slice(2)}`);
+    channel
       .on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "goals" },
