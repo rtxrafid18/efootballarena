@@ -8,8 +8,8 @@ export function useTournament() {
   const query = useQuery({ queryKey: ["tournament"], queryFn: fetchAll });
 
   useEffect(() => {
-    const channel = supabase
-      .channel("tournament-any")
+    const channel = supabase.channel(`tournament-any-${Math.random().toString(36).slice(2)}`);
+    channel
       .on("postgres_changes", { event: "*", schema: "public" }, () => {
         qc.invalidateQueries({ queryKey: ["tournament"] });
       })
