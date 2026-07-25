@@ -26,6 +26,9 @@ export type Match = {
   mvp_player_name: string | null;
   mvp_team_id: string | null;
   bracket_slot: number | null;
+  home_pens: number | null;
+  away_pens: number | null;
+  went_to_extra_time: boolean;
   created_at: string;
 };
 
