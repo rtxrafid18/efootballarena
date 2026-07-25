@@ -2,6 +2,7 @@ import type { Goal, Match, Team } from "@/lib/tournament";
 import { stageLabel } from "@/lib/tournament";
 import { TeamBadge } from "@/components/team/TeamBadge";
 import { cn } from "@/lib/utils";
+import { Link } from "@tanstack/react-router";
 
 export function MatchCard({
   match,
@@ -26,9 +27,20 @@ export function MatchCard({
 
   const isLive = match.status === "live";
   const isFinished = match.status === "finished";
+  const hasPens =
+    match.home_pens !== null && match.away_pens !== null;
+  const penWinner = hasPens
+    ? (match.home_pens ?? 0) > (match.away_pens ?? 0)
+      ? home
+      : away
+    : null;
 
   return (
-    <div className="card-elevated overflow-hidden">
+    <Link
+      to="/matches/$matchId"
+      params={{ matchId: match.id }}
+      className="card-elevated overflow-hidden block hover:border-accent/50 transition-colors focus:outline-none focus:ring-2 focus:ring-accent"
+    >
       {/* header */}
       <div className="flex items-center justify-between px-4 pt-3 pb-2 text-[11px] uppercase tracking-wider text-muted-foreground">
         <span>{stageLabel[match.stage]}</span>
@@ -49,6 +61,21 @@ export function MatchCard({
         </div>
         <TeamBadge team={away} align="right" />
       </div>
+
+      {/* penalties */}
+      {hasPens && (
+        <div className="px-4 pb-2 -mt-1 text-center text-[11px] text-muted-foreground">
+          After penalties:{" "}
+          <span className="text-foreground font-semibold tabular-nums">
+            {match.home_pens} - {match.away_pens}
+          </span>
+          {penWinner && (
+            <span className="ml-2 text-accent font-semibold">
+              · {penWinner.short_name ?? penWinner.name} win
+            </span>
+          )}
+        </div>
+      )}
 
       {/* goals timeline */}
       {matchGoals.length > 0 && (
@@ -77,7 +104,7 @@ export function MatchCard({
           ★ MVP: <span className="font-medium">{match.mvp_player_name}</span>
         </div>
       )}
-    </div>
+    </Link>
   );
 }
 
