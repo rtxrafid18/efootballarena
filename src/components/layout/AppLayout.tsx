@@ -2,6 +2,7 @@ import { Link, useRouterState } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import { Trophy, ShieldHalf, LayoutGrid, Swords, Award, Settings } from "lucide-react";
+import { GoalCelebration } from "@/components/match/GoalCelebration";
 
 const nav = [
   { to: "/", label: "Home", icon: Trophy },
@@ -51,6 +52,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
       </header>
 
       <main className="flex-1 w-full max-w-6xl mx-auto px-4 py-6 pb-24 md:pb-8">{children}</main>
+      <GoalCelebration />
 
       {/* Mobile bottom nav */}
       <nav className="md:hidden fixed bottom-0 inset-x-0 z-30 border-t border-border bg-background/90 backdrop-blur-xl">
