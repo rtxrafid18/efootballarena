@@ -146,11 +146,13 @@ export type Database = {
       }
       matches: {
         Row: {
+          away_pens: number | null
           away_score: number
           away_team_id: string | null
           bracket_slot: number | null
           created_at: string
           group_id: string | null
+          home_pens: number | null
           home_score: number
           home_team_id: string | null
           id: string
@@ -159,13 +161,16 @@ export type Database = {
           scheduled_at: string | null
           stage: string
           status: string
+          went_to_extra_time: boolean
         }
         Insert: {
+          away_pens?: number | null
           away_score?: number
           away_team_id?: string | null
           bracket_slot?: number | null
           created_at?: string
           group_id?: string | null
+          home_pens?: number | null
           home_score?: number
           home_team_id?: string | null
           id?: string
@@ -174,13 +179,16 @@ export type Database = {
           scheduled_at?: string | null
           stage?: string
           status?: string
+          went_to_extra_time?: boolean
         }
         Update: {
+          away_pens?: number | null
           away_score?: number
           away_team_id?: string | null
           bracket_slot?: number | null
           created_at?: string
           group_id?: string | null
+          home_pens?: number | null
           home_score?: number
           home_team_id?: string | null
           id?: string
@@ -189,6 +197,7 @@ export type Database = {
           scheduled_at?: string | null
           stage?: string
           status?: string
+          went_to_extra_time?: boolean
         }
         Relationships: [
           {
