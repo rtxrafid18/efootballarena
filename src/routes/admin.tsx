@@ -330,6 +330,49 @@ function MatchAdminRow({
             </div>
           </div>
 
+          {/* Penalty shootout — for draws after extra time in knockout */}
+          {match.stage !== "group" && (
+            <div className="rounded-lg border border-border/70 p-3 bg-surface-2/40">
+              <div className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-2">
+                Extra time & penalties
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 items-end">
+                <label className="flex items-center gap-2 text-sm">
+                  <input
+                    type="checkbox"
+                    checked={match.went_to_extra_time}
+                    onChange={(e) => updateMatch({ went_to_extra_time: e.target.checked })}
+                    className="h-4 w-4 accent-[var(--accent)]"
+                  />
+                  Went to extra time
+                </label>
+                <NumberInput
+                  label={`${home?.short_name ?? "Home"} pens`}
+                  value={match.home_pens ?? 0}
+                  onChange={(v) => updateMatch({ home_pens: v })}
+                />
+                <NumberInput
+                  label={`${away?.short_name ?? "Away"} pens`}
+                  value={match.away_pens ?? 0}
+                  onChange={(v) => updateMatch({ away_pens: v })}
+                />
+                <button
+                  onClick={() => updateMatch({ home_pens: null, away_pens: null })}
+                  className="text-xs text-muted-foreground hover:text-foreground underline"
+                >
+                  Clear penalties
+                </button>
+              </div>
+              {match.home_score === match.away_score &&
+                match.went_to_extra_time &&
+                (match.home_pens === null || match.away_pens === null) && (
+                  <p className="text-[11px] text-accent mt-2">
+                    Draw after extra time — enter penalty scores to record the shootout winner.
+                  </p>
+                )}
+            </div>
+          )}
+
           <GoalsEditor matchId={match.id} home={home} away={away} goals={goals} onChange={onChange} />
 
           <div className="flex justify-end">
