@@ -2,6 +2,7 @@ import { Link, useRouterState } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import { Trophy, ShieldHalf, LayoutGrid, Swords, Award, Settings } from "lucide-react";
+void Trophy;
 import { GoalCelebration } from "@/components/match/GoalCelebration";
 import { LiveTicker } from "@/components/match/LiveTicker";
 
