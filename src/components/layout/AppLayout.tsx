@@ -96,16 +96,25 @@ export function PageHeader({
   action?: ReactNode;
 }) {
   return (
-    <div className="flex items-end justify-between gap-3 mb-5 relative">
-      <div className="absolute -top-2 -left-3 text-4xl opacity-[0.07] pointer-events-none select-none" aria-hidden>⚽</div>
-      <div className="relative">
-        <div className="text-[10px] uppercase tracking-[0.2em] text-accent/90 mb-1 flex items-center gap-1.5">
-          <span className="inline-block h-1 w-6 bg-accent/60 rounded-full" /> Matchday
+    <div className="wc-banner mb-6 p-5 md:p-7">
+      <div className="absolute inset-x-0 top-0 h-1 ribbon-strip opacity-90" />
+      <div className="absolute inset-0 confetti-dots opacity-30 pointer-events-none" aria-hidden />
+      <div className="relative flex items-end justify-between gap-3">
+        <div>
+          <div className="text-[10px] uppercase tracking-[0.25em] text-accent/90 mb-2 flex items-center gap-2">
+            <span className="trophy-glow">🏆</span>
+            <span className="inline-block h-[2px] w-8 bg-accent/70 rounded-full" />
+            FIFA eFootball · Matchday
+          </div>
+          <h1 className="text-3xl md:text-4xl font-black tracking-tight gold-shimmer-text">
+            {title}
+          </h1>
+          {subtitle && <p className="text-sm text-white/70 mt-2 max-w-xl">{subtitle}</p>}
         </div>
-        <h1 className="text-2xl md:text-3xl font-bold tracking-tight chalk-underline">{title}</h1>
-        {subtitle && <p className="text-sm text-muted-foreground mt-2">{subtitle}</p>}
+        {action}
       </div>
-      {action}
+      <div className="absolute inset-x-0 bottom-0 h-[3px] bg-gradient-to-r from-transparent via-accent/70 to-transparent" />
     </div>
   );
 }
+
