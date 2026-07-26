@@ -19,14 +19,17 @@ export function AppLayout({ children }: { children: ReactNode }) {
 
   return (
     <div className="min-h-screen w-full flex flex-col">
-      <header className="sticky top-0 z-30 backdrop-blur-xl bg-background/70 border-b border-border">
+      <header className="sticky top-0 z-30 backdrop-blur-xl bg-background/70 border-b border-border pitch-stripes">
         <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between gap-4">
           <Link to="/" className="flex items-center gap-2 group">
-            <div className="h-8 w-8 rounded-md maroon-gradient flex items-center justify-center shadow-lg shadow-black/40">
-              <Trophy className="h-4 w-4 text-accent" />
+            <div className="h-8 w-8 rounded-md maroon-gradient flex items-center justify-center shadow-lg shadow-black/40 relative overflow-hidden">
+              <span className="ball-spin text-base" aria-hidden>⚽</span>
             </div>
             <div className="leading-tight">
-              <div className="text-sm font-bold tracking-wide">eFootball Cup</div>
+              <div className="text-sm font-bold tracking-wide flex items-center gap-1.5">
+                eFootball Cup
+                <span className="text-accent text-[10px]">★</span>
+              </div>
               <div className="text-[10px] text-muted-foreground uppercase tracking-widest">Tournament Center</div>
             </div>
           </Link>
@@ -93,10 +96,14 @@ export function PageHeader({
   action?: ReactNode;
 }) {
   return (
-    <div className="flex items-end justify-between gap-3 mb-5">
-      <div>
-        <h1 className="text-2xl md:text-3xl font-bold tracking-tight">{title}</h1>
-        {subtitle && <p className="text-sm text-muted-foreground mt-1">{subtitle}</p>}
+    <div className="flex items-end justify-between gap-3 mb-5 relative">
+      <div className="absolute -top-2 -left-3 text-4xl opacity-[0.07] pointer-events-none select-none" aria-hidden>⚽</div>
+      <div className="relative">
+        <div className="text-[10px] uppercase tracking-[0.2em] text-accent/90 mb-1 flex items-center gap-1.5">
+          <span className="inline-block h-1 w-6 bg-accent/60 rounded-full" /> Matchday
+        </div>
+        <h1 className="text-2xl md:text-3xl font-bold tracking-tight chalk-underline">{title}</h1>
+        {subtitle && <p className="text-sm text-muted-foreground mt-2">{subtitle}</p>}
       </div>
       {action}
     </div>

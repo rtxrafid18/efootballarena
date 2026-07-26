@@ -86,6 +86,14 @@
     background:
       radial-gradient(1200px 600px at 10% -10%, color-mix(in oklab, var(--maroon) 25%, transparent), transparent 60%),
       radial-gradient(900px 500px at 100% 0%, color-mix(in oklab, var(--gold) 12%, transparent), transparent 55%),
+      /* stadium floodlights */
+      radial-gradient(600px 300px at 50% -20%, color-mix(in oklab, var(--gold) 8%, transparent), transparent 70%),
+      /* subtle pitch stripes */
+      repeating-linear-gradient(
+        90deg,
+        transparent 0 120px,
+        color-mix(in oklab, var(--gold) 2%, transparent) 120px 240px
+      ),
       var(--color-background);
     min-height: 100vh;
     font-family: var(--font-display);
@@ -124,3 +132,67 @@
   0% { transform: translateX(0); }
   100% { transform: translateX(-50%); }
 }
+
+/* Football-vibe utilities */
+@utility pitch-stripes {
+  background-image: repeating-linear-gradient(
+    90deg,
+    color-mix(in oklab, var(--gold) 4%, transparent) 0 40px,
+    transparent 40px 80px
+  );
+}
+
+@utility hex-mesh {
+  background-color: var(--surface);
+  background-image:
+    radial-gradient(circle at 1px 1px, color-mix(in oklab, var(--gold) 18%, transparent) 1px, transparent 0);
+  background-size: 14px 14px;
+}
+
+@utility chalk-underline {
+  position: relative;
+}
+@utility chalk-underline {
+  &::after {
+    content: "";
+    display: block;
+    margin-top: 6px;
+    height: 2px;
+    width: 42px;
+    background: linear-gradient(90deg, var(--gold), transparent);
+    border-radius: 2px;
+  }
+}
+
+@utility stadium-panel {
+  position: relative;
+  background:
+    linear-gradient(180deg, color-mix(in oklab, var(--maroon) 22%, transparent), transparent 60%),
+    var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+@utility stadium-panel {
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(220px 90px at 12% -20%, color-mix(in oklab, var(--gold) 30%, transparent), transparent 70%),
+      radial-gradient(220px 90px at 88% -20%, color-mix(in oklab, var(--gold) 30%, transparent), transparent 70%);
+    pointer-events: none;
+  }
+}
+
+@keyframes ball-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+.ball-spin { animation: ball-spin 6s linear infinite; display: inline-block; }
+
+@keyframes float-y {
+  0%,100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+.float-y { animation: float-y 3s ease-in-out infinite; display: inline-block; }
