@@ -196,3 +196,111 @@
   50% { transform: translateY(-4px); }
 }
 .float-y { animation: float-y 3s ease-in-out infinite; display: inline-block; }
+
+/* ===== FIFA World Cup vibes ===== */
+@keyframes gold-shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+@utility gold-shimmer-text {
+  background: linear-gradient(
+    90deg,
+    oklch(0.72 0.15 70) 0%,
+    oklch(0.95 0.16 90) 45%,
+    #ffffff 50%,
+    oklch(0.95 0.16 90) 55%,
+    oklch(0.72 0.15 70) 100%
+  );
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: gold-shimmer 6s linear infinite;
+}
+
+@utility wc-banner {
+  position: relative;
+  border-radius: var(--radius);
+  overflow: hidden;
+  background:
+    radial-gradient(600px 200px at 20% -20%, color-mix(in oklab, var(--gold) 35%, transparent), transparent 60%),
+    radial-gradient(500px 220px at 100% 120%, color-mix(in oklab, var(--gold) 22%, transparent), transparent 60%),
+    linear-gradient(135deg, oklch(0.32 0.14 15) 0%, oklch(0.20 0.06 260) 55%, oklch(0.28 0.12 15) 100%);
+  border: 1px solid color-mix(in oklab, var(--gold) 35%, var(--border));
+  box-shadow:
+    inset 0 1px 0 color-mix(in oklab, var(--gold) 25%, transparent),
+    0 20px 50px -25px color-mix(in oklab, var(--maroon) 80%, transparent);
+}
+@utility wc-banner {
+  &::before {
+    content: "";
+    position: absolute; inset: 0;
+    background-image:
+      repeating-linear-gradient(45deg,
+        color-mix(in oklab, var(--gold) 6%, transparent) 0 2px,
+        transparent 2px 14px);
+    pointer-events: none;
+    mix-blend-mode: overlay;
+  }
+  &::after {
+    content: "🏆";
+    position: absolute;
+    right: -10px; bottom: -30px;
+    font-size: 160px;
+    line-height: 1;
+    opacity: 0.10;
+    filter: drop-shadow(0 0 20px var(--gold));
+    pointer-events: none;
+  }
+}
+
+@utility gold-frame {
+  border: 1px solid transparent;
+  background:
+    linear-gradient(var(--surface), var(--surface)) padding-box,
+    linear-gradient(135deg, color-mix(in oklab, var(--gold) 80%, transparent), color-mix(in oklab, var(--maroon) 70%, transparent)) border-box;
+  border-radius: var(--radius);
+}
+
+@utility section-title {
+  display: flex; align-items: center; gap: 0.6rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+}
+@utility section-title {
+  &::before {
+    content: "";
+    width: 3px; height: 18px;
+    background: linear-gradient(180deg, var(--gold), var(--maroon));
+    border-radius: 2px;
+    box-shadow: 0 0 10px color-mix(in oklab, var(--gold) 60%, transparent);
+  }
+}
+
+@keyframes trophy-glow {
+  0%,100% { filter: drop-shadow(0 0 8px color-mix(in oklab, var(--gold) 60%, transparent)); }
+  50%     { filter: drop-shadow(0 0 22px color-mix(in oklab, var(--gold) 90%, transparent)); }
+}
+.trophy-glow { animation: trophy-glow 3s ease-in-out infinite; display: inline-block; }
+
+@utility confetti-dots {
+  background-image:
+    radial-gradient(circle at 10% 20%, color-mix(in oklab, var(--gold) 60%, transparent) 2px, transparent 3px),
+    radial-gradient(circle at 80% 40%, color-mix(in oklab, var(--maroon) 70%, transparent) 2px, transparent 3px),
+    radial-gradient(circle at 30% 80%, color-mix(in oklab, var(--gold) 40%, transparent) 2px, transparent 3px),
+    radial-gradient(circle at 65% 15%, color-mix(in oklab, var(--gold) 30%, transparent) 1.5px, transparent 2.5px),
+    radial-gradient(circle at 50% 60%, color-mix(in oklab, var(--gold) 50%, transparent) 1.5px, transparent 2.5px);
+  background-size: 220px 220px;
+}
+
+@utility ribbon-strip {
+  background: repeating-linear-gradient(
+    -45deg,
+    var(--maroon) 0 14px,
+    oklch(0.35 0.14 15) 14px 28px,
+    var(--gold) 28px 32px,
+    oklch(0.35 0.14 15) 32px 46px
+  );
+}
