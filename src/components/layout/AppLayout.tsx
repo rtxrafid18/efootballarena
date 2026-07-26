@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import { Trophy, ShieldHalf, LayoutGrid, Swords, Award, Settings } from "lucide-react";
 import { GoalCelebration } from "@/components/match/GoalCelebration";
+import { LiveTicker } from "@/components/match/LiveTicker";
 
 const nav = [
   { to: "/", label: "Home", icon: Trophy },
@@ -50,6 +51,8 @@ export function AppLayout({ children }: { children: ReactNode }) {
           </nav>
         </div>
       </header>
+
+      <LiveTicker />
 
       <main className="flex-1 w-full max-w-6xl mx-auto px-4 py-6 pb-24 md:pb-8">{children}</main>
       <GoalCelebration />
