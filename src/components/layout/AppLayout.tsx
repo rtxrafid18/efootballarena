@@ -61,7 +61,19 @@ export function AppLayout({ children }: { children: ReactNode }) {
       <LiveTicker />
 
       <main className="flex-1 w-full max-w-6xl mx-auto px-4 py-6 pb-24 md:pb-8">{children}</main>
+
+      <footer className="hidden md:block relative mt-8 border-t border-accent/20">
+        <div className="absolute inset-x-0 top-0 h-[3px] ribbon-strip" />
+        <div className="max-w-6xl mx-auto px-4 py-6 flex items-center justify-between text-xs">
+          <div className="flex items-center gap-2 text-accent/90 uppercase tracking-[0.25em] font-bold">
+            <span className="trophy-glow">🏆</span> eFootball · Road to Glory
+          </div>
+          <div className="text-muted-foreground">One Ball · One Dream · One Cup</div>
+          <div className="text-accent/80">★ ★ ★</div>
+        </div>
+      </footer>
       <GoalCelebration />
+
 
       {/* Mobile bottom nav */}
       <nav className="md:hidden fixed bottom-0 inset-x-0 z-30 border-t border-border bg-background/90 backdrop-blur-xl">
