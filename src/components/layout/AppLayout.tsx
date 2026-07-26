@@ -19,18 +19,20 @@ export function AppLayout({ children }: { children: ReactNode }) {
 
   return (
     <div className="min-h-screen w-full flex flex-col">
-      <header className="sticky top-0 z-30 backdrop-blur-xl bg-background/70 border-b border-border pitch-stripes">
-        <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between gap-4">
+      <header className="sticky top-0 z-30 backdrop-blur-xl bg-background/80 border-b border-accent/20 relative">
+        <div className="absolute inset-x-0 top-0 h-[3px] ribbon-strip" />
+        <div className="absolute inset-0 pitch-stripes opacity-60 pointer-events-none" />
+        <div className="relative max-w-6xl mx-auto px-4 h-14 flex items-center justify-between gap-4">
           <Link to="/" className="flex items-center gap-2 group">
-            <div className="h-8 w-8 rounded-md maroon-gradient flex items-center justify-center shadow-lg shadow-black/40 relative overflow-hidden">
-              <span className="ball-spin text-base" aria-hidden>⚽</span>
+            <div className="h-9 w-9 rounded-md gold-frame flex items-center justify-center shadow-lg shadow-black/40 relative overflow-hidden">
+              <span className="ball-spin text-lg" aria-hidden>⚽</span>
             </div>
             <div className="leading-tight">
-              <div className="text-sm font-bold tracking-wide flex items-center gap-1.5">
-                eFootball Cup
-                <span className="text-accent text-[10px]">★</span>
+              <div className="text-sm font-black tracking-wide flex items-center gap-1.5">
+                <span className="gold-shimmer-text">eFootball CUP</span>
+                <span className="trophy-glow text-[10px]">🏆</span>
               </div>
-              <div className="text-[10px] text-muted-foreground uppercase tracking-widest">Tournament Center</div>
+              <div className="text-[9px] text-accent/80 uppercase tracking-[0.25em]">World Tournament</div>
             </div>
           </Link>
           <nav className="hidden md:flex items-center gap-1">
@@ -41,10 +43,10 @@ export function AppLayout({ children }: { children: ReactNode }) {
                   key={n.to}
                   to={n.to}
                   className={cn(
-                    "px-3 py-1.5 rounded-md text-sm font-medium transition-colors",
+                    "px-3 py-1.5 rounded-md text-sm font-semibold uppercase tracking-wide transition-all",
                     active
-                      ? "bg-surface-2 text-accent"
-                      : "text-muted-foreground hover:text-foreground hover:bg-surface",
+                      ? "bg-gradient-to-b from-accent/20 to-accent/5 text-accent border border-accent/30 shadow-inner"
+                      : "text-muted-foreground hover:text-accent hover:bg-surface",
                   )}
                 >
                   {n.label}
@@ -54,6 +56,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
           </nav>
         </div>
       </header>
+
 
       <LiveTicker />
 
