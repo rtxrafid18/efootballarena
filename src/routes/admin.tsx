@@ -28,7 +28,18 @@ function AdminPage() {
   const { data } = useTournament();
   const [tab, setTab] = useState<Tab>("Settings");
 
-  if (!data) return <AppLayout><div className="text-muted-foreground">Loading…</div></AppLayout>;
+  if (!data) return (
+      <AppLayout>
+        <div className="space-y-4">
+          <div className="h-28 rounded-2xl bg-surface/60 animate-pulse" />
+          <div className="grid gap-3.5 md:grid-cols-2 stagger">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="h-24 rounded-xl bg-surface/50 animate-pulse" />
+            ))}
+          </div>
+        </div>
+      </AppLayout>
+    );
 
   return (
     <AppLayout>

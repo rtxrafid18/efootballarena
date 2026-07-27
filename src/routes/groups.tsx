@@ -18,7 +18,18 @@ export const Route = createFileRoute("/groups")({
 
 function GroupsPage() {
   const { data } = useTournament();
-  if (!data) return <AppLayout><div className="text-muted-foreground">Loading…</div></AppLayout>;
+  if (!data) return (
+      <AppLayout>
+        <div className="space-y-4">
+          <div className="h-28 rounded-2xl bg-surface/60 animate-pulse" />
+          <div className="grid gap-3.5 md:grid-cols-2 stagger">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="h-24 rounded-xl bg-surface/50 animate-pulse" />
+            ))}
+          </div>
+        </div>
+      </AppLayout>
+    );
 
   if (data.settings.tournament_format !== "groups") {
     return (
@@ -34,11 +45,11 @@ function GroupsPage() {
   return (
     <AppLayout>
       <PageHeader title="Group Stage" subtitle="Top 2 from each group advance" />
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3 stagger">
         {data.groups.map((g) => {
           const standings = groupStandings(g.id, data);
           return (
-            <div key={g.id} className="card-elevated overflow-hidden">
+            <div key={g.id} className="card-elevated lift overflow-hidden">
               <div className="px-4 py-2.5 flex items-center justify-between border-b border-border bg-surface-2">
                 <div className="font-bold">Group {g.name}</div>
                 <div className="text-[10px] uppercase tracking-widest text-muted-foreground">
