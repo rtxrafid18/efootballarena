@@ -19,23 +19,25 @@ export function AppLayout({ children }: { children: ReactNode }) {
 
   return (
     <div className="min-h-screen w-full flex flex-col">
-      <header className="sticky top-0 z-30 backdrop-blur-xl bg-background/80 border-b border-accent/20 relative">
-        <div className="absolute inset-x-0 top-0 h-[3px] ribbon-strip" />
-        <div className="absolute inset-0 pitch-stripes opacity-60 pointer-events-none" />
-        <div className="relative max-w-6xl mx-auto px-4 h-14 flex items-center justify-between gap-4">
-          <Link to="/" className="flex items-center gap-2 group">
-            <div className="h-9 w-9 rounded-md gold-frame flex items-center justify-center shadow-lg shadow-black/40 relative overflow-hidden">
-              <span className="ball-spin text-lg" aria-hidden>⚽</span>
+      <header className="sticky top-0 z-30 glass border-b border-border/80">
+        <div className="absolute inset-x-0 top-0 h-[2px] ribbon-strip opacity-80" />
+        <div className="absolute inset-0 pitch-stripes opacity-40 pointer-events-none" />
+        <div className="relative max-w-6xl mx-auto px-4 h-16 flex items-center justify-between gap-4">
+          <Link to="/" className="flex items-center gap-3 group">
+            <div className="h-10 w-10 rounded-xl gold-frame flex items-center justify-center overflow-hidden transition-transform duration-500 group-hover:scale-105">
+              <span className="ball-spin text-lg" aria-hidden>
+                ⚽
+              </span>
             </div>
-            <div className="leading-tight">
-              <div className="text-sm font-black tracking-wide flex items-center gap-1.5">
-                <span className="gold-shimmer-text">eFootball CUP</span>
-                <span className="trophy-glow text-[10px]">🏆</span>
+            <div className="leading-none">
+              <div className="font-display text-[15px] font-extrabold tracking-[0.14em] uppercase gold-shimmer-text">
+                eFootball Cup
               </div>
-              <div className="text-[9px] text-accent/80 uppercase tracking-[0.25em]">World Tournament</div>
+              <div className="eyebrow mt-1.5 opacity-70">World Tournament</div>
             </div>
           </Link>
-          <nav className="hidden md:flex items-center gap-1">
+
+          <nav className="hidden md:flex items-center gap-0.5">
             {nav.map((n) => {
               const active = n.to === "/" ? pathname === "/" : pathname.startsWith(n.to);
               return (
@@ -43,13 +45,19 @@ export function AppLayout({ children }: { children: ReactNode }) {
                   key={n.to}
                   to={n.to}
                   className={cn(
-                    "px-3 py-1.5 rounded-md text-sm font-semibold uppercase tracking-wide transition-all",
+                    "relative px-3.5 py-2 rounded-lg font-display text-[12px] font-bold uppercase tracking-[0.12em] transition-colors duration-300",
                     active
-                      ? "bg-gradient-to-b from-accent/20 to-accent/5 text-accent border border-accent/30 shadow-inner"
-                      : "text-muted-foreground hover:text-accent hover:bg-surface",
+                      ? "text-accent"
+                      : "text-muted-foreground hover:text-foreground hover:bg-surface/70",
                   )}
                 >
                   {n.label}
+                  <span
+                    className={cn(
+                      "absolute left-3 right-3 -bottom-[3px] h-[2px] rounded-full bg-gradient-to-r from-accent to-accent/20 origin-left transition-transform duration-500 ease-out",
+                      active ? "scale-x-100" : "scale-x-0",
+                    )}
+                  />
                 </Link>
               );
             })}
@@ -57,26 +65,27 @@ export function AppLayout({ children }: { children: ReactNode }) {
         </div>
       </header>
 
-
       <LiveTicker />
 
-      <main className="flex-1 w-full max-w-6xl mx-auto px-4 py-6 pb-24 md:pb-8">{children}</main>
+      <main key={pathname} className="flex-1 w-full max-w-6xl mx-auto px-4 py-7 pb-28 md:pb-10 reveal-fade">
+        {children}
+      </main>
 
-      <footer className="hidden md:block relative mt-8 border-t border-accent/20">
-        <div className="absolute inset-x-0 top-0 h-[3px] ribbon-strip" />
-        <div className="max-w-6xl mx-auto px-4 py-6 flex items-center justify-between text-xs">
-          <div className="flex items-center gap-2 text-accent/90 uppercase tracking-[0.25em] font-bold">
+      <footer className="relative mt-10 border-t border-border/70 pb-20 md:pb-0">
+        <div className="absolute inset-x-0 top-0 h-[2px] ribbon-strip opacity-60" />
+        <div className="max-w-6xl mx-auto px-4 py-8 flex flex-col md:flex-row items-center justify-between gap-3 text-xs">
+          <div className="flex items-center gap-2 font-display uppercase tracking-[0.22em] font-bold text-accent/90">
             <span className="trophy-glow">🏆</span> eFootball · Road to Glory
           </div>
-          <div className="text-muted-foreground">One Ball · One Dream · One Cup</div>
-          <div className="text-accent/80">★ ★ ★</div>
+          <div className="text-muted-foreground tracking-wide">One Ball · One Dream · One Cup</div>
+          <div className="text-accent/60 tracking-[0.4em]">★★★</div>
         </div>
       </footer>
+
       <GoalCelebration />
 
-
       {/* Mobile bottom nav */}
-      <nav className="md:hidden fixed bottom-0 inset-x-0 z-30 border-t border-border bg-background/90 backdrop-blur-xl">
+      <nav className="md:hidden fixed bottom-0 inset-x-0 z-30 glass border-t border-border">
         <div className="grid grid-cols-6">
           {nav.map((n) => {
             const active = n.to === "/" ? pathname === "/" : pathname.startsWith(n.to);
@@ -86,11 +95,19 @@ export function AppLayout({ children }: { children: ReactNode }) {
                 key={n.to}
                 to={n.to}
                 className={cn(
-                  "flex flex-col items-center justify-center py-2 text-[10px] gap-0.5",
+                  "relative flex flex-col items-center justify-center py-2.5 text-[9px] font-semibold uppercase tracking-wider gap-1 transition-colors duration-300",
                   active ? "text-accent" : "text-muted-foreground",
                 )}
               >
-                <Icon className="h-4 w-4" />
+                {active && (
+                  <span className="absolute top-0 h-[2px] w-8 rounded-full bg-accent" />
+                )}
+                <Icon
+                  className={cn(
+                    "h-[18px] w-[18px] transition-transform duration-500 ease-out",
+                    active && "-translate-y-0.5 scale-110",
+                  )}
+                />
                 {n.label}
               </Link>
             );
@@ -111,25 +128,26 @@ export function PageHeader({
   action?: ReactNode;
 }) {
   return (
-    <div className="wc-banner mb-6 p-5 md:p-7">
-      <div className="absolute inset-x-0 top-0 h-1 ribbon-strip opacity-90" />
-      <div className="absolute inset-0 confetti-dots opacity-30 pointer-events-none" aria-hidden />
-      <div className="relative flex items-end justify-between gap-3">
-        <div>
-          <div className="text-[10px] uppercase tracking-[0.25em] text-accent/90 mb-2 flex items-center gap-2">
-            <span className="trophy-glow">🏆</span>
-            <span className="inline-block h-[2px] w-8 bg-accent/70 rounded-full" />
+    <div className="wc-banner mb-7 p-6 md:p-9 reveal">
+      <div className="absolute inset-0 confetti-dots opacity-40 pointer-events-none" aria-hidden />
+      <div className="relative flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div className="min-w-0">
+          <div className="eyebrow flex items-center gap-2.5">
+            <span className="inline-block h-[2px] w-7 bg-accent/70 rounded-full" />
             FIFA eFootball · Matchday
           </div>
-          <h1 className="text-3xl md:text-4xl font-black tracking-tight gold-shimmer-text">
+          <h1 className="mt-3 text-3xl md:text-5xl font-extrabold tracking-tight text-foreground">
             {title}
           </h1>
-          {subtitle && <p className="text-sm text-white/70 mt-2 max-w-xl">{subtitle}</p>}
+          {subtitle && (
+            <p className="text-sm text-muted-foreground mt-2.5 max-w-xl leading-relaxed">
+              {subtitle}
+            </p>
+          )}
         </div>
         {action}
       </div>
-      <div className="absolute inset-x-0 bottom-0 h-[3px] bg-gradient-to-r from-transparent via-accent/70 to-transparent" />
+      <div className="absolute inset-x-0 bottom-0 hairline opacity-70" />
     </div>
   );
 }
-
