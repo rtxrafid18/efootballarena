@@ -22,7 +22,14 @@ function HomePage() {
   if (isLoading || !data) {
     return (
       <AppLayout>
-        <div className="text-muted-foreground text-sm">Loading tournament…</div>
+        <div className="space-y-4">
+          <div className="h-32 rounded-2xl bg-surface/60 animate-pulse" />
+          <div className="grid gap-3.5 md:grid-cols-2 stagger">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="h-28 rounded-xl bg-surface/50 animate-pulse" />
+            ))}
+          </div>
+        </div>
       </AppLayout>
     );
   }
@@ -50,7 +57,7 @@ function HomePage() {
       {live.length > 0 && (
         <section className="mb-8">
           <SectionTitle title="Live now" tone="live" />
-          <div className="grid gap-3 md:grid-cols-2">
+          <div className="grid gap-3.5 md:grid-cols-2 stagger">
             {live.map((m) => (
               <MatchCard key={m.id} match={m} teams={data.teams} goals={data.goals} />
             ))}
@@ -58,12 +65,12 @@ function HomePage() {
         </section>
       )}
 
-      <div className="grid gap-8 lg:grid-cols-3">
+      <div className="grid gap-8 lg:grid-cols-3 items-start">
         <section className="lg:col-span-2 space-y-8">
           {recent.length > 0 && (
             <div>
               <SectionTitle title="Latest results" link={{ to: "/matches", label: "All matches" }} />
-              <div className="grid gap-3 md:grid-cols-2">
+              <div className="grid gap-3.5 md:grid-cols-2 stagger">
                 {recent.map((m) => (
                   <MatchCard key={m.id} match={m} teams={data.teams} goals={data.goals} />
                 ))}
@@ -73,7 +80,7 @@ function HomePage() {
           {upcoming.length > 0 && (
             <div>
               <SectionTitle title="Upcoming" />
-              <div className="grid gap-3 md:grid-cols-2">
+              <div className="grid gap-3.5 md:grid-cols-2 stagger">
                 {upcoming.map((m) => (
                   <MatchCard key={m.id} match={m} teams={data.teams} goals={data.goals} compact />
                 ))}
@@ -89,7 +96,7 @@ function HomePage() {
           )}
         </section>
 
-        <aside className="space-y-6">
+        <aside className="space-y-5 lg:sticky lg:top-24">
           <LeaderCard
             title="Golden Boot"
             subtitle="Top scorers"
@@ -126,14 +133,22 @@ function SectionTitle({
   link?: { to: string; label: string };
 }) {
   return (
-    <div className="flex items-center justify-between mb-3">
-      <h2 className="text-sm font-semibold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-        {tone === "live" && <span className="live-dot inline-block h-2 w-2 rounded-full bg-[var(--live)]" />}
+    <div className="flex items-center justify-between mb-4">
+      <h2 className="section-title text-foreground">
+        {tone === "live" && (
+          <span className="live-dot inline-block h-2 w-2 rounded-full bg-[var(--live)]" />
+        )}
         {title}
       </h2>
       {link && (
-        <Link to={link.to} className="text-xs text-accent hover:underline">
-          {link.label} →
+        <Link
+          to={link.to}
+          className="group text-[11px] font-semibold uppercase tracking-[0.15em] text-accent/90 hover:text-accent transition-colors"
+        >
+          {link.label}
+          <span className="inline-block ml-1.5 transition-transform duration-300 group-hover:translate-x-1">
+            →
+          </span>
         </Link>
       )}
     </div>
@@ -152,25 +167,49 @@ function LeaderCard({
   rows: { name: string; sub: string; value: number }[];
 }) {
   return (
-    <div className="card-elevated p-4">
-      <div className="flex items-baseline justify-between mb-3">
+    <div className="card-elevated lift p-5 overflow-hidden">
+      <div className="absolute inset-x-0 top-0 h-[2px] ribbon-strip opacity-50" />
+      <div className="flex items-center gap-3 mb-4">
+        <div className="h-9 w-9 rounded-lg gold-frame flex items-center justify-center text-base">
+          {emoji}
+        </div>
         <div>
-          <div className="text-sm font-bold">{emoji} {title}</div>
-          <div className="text-[11px] text-muted-foreground uppercase tracking-wider">{subtitle}</div>
+          <div className="font-display text-sm font-extrabold uppercase tracking-[0.12em]">
+            {title}
+          </div>
+          <div className="text-[10px] text-muted-foreground uppercase tracking-[0.2em] mt-0.5">
+            {subtitle}
+          </div>
         </div>
       </div>
       {rows.length === 0 ? (
         <div className="text-xs text-muted-foreground">No data yet</div>
       ) : (
-        <ol className="space-y-2">
+        <ol className="stagger space-y-1">
           {rows.map((r, i) => (
-            <li key={i} className="flex items-center gap-3 text-sm">
-              <span className="w-5 text-center text-xs text-muted-foreground tabular-nums">{i + 1}</span>
+            <li
+              key={i}
+              className="flex items-center gap-3 text-sm rounded-lg px-2 py-2 -mx-2 transition-colors duration-300 hover:bg-surface-2/70"
+            >
+              <span
+                className={
+                  "grid place-items-center h-6 w-6 rounded-md text-[11px] font-bold tabular-nums " +
+                  (i === 0
+                    ? "gold-gradient text-accent-foreground"
+                    : "bg-surface-2 text-muted-foreground")
+                }
+              >
+                {i + 1}
+              </span>
               <div className="flex-1 min-w-0">
-                <div className="truncate font-medium">{r.name}</div>
-                {r.sub && <div className="truncate text-[11px] text-muted-foreground">{r.sub}</div>}
+                <div className="truncate font-semibold">{r.name}</div>
+                {r.sub && (
+                  <div className="truncate text-[11px] text-muted-foreground">{r.sub}</div>
+                )}
               </div>
-              <span className="tabular-nums font-bold text-accent">{r.value}</span>
+              <span className="font-display tabular-nums font-extrabold text-accent text-base">
+                {r.value}
+              </span>
             </li>
           ))}
         </ol>
@@ -181,13 +220,14 @@ function LeaderCard({
 
 function EmptyState({ title, body, cta }: { title: string; body: string; cta?: { to: string; label: string } }) {
   return (
-    <div className="card-elevated p-8 text-center">
-      <div className="text-lg font-semibold">{title}</div>
+    <div className="stadium-panel p-10 text-center reveal">
+      <div className="text-3xl mb-3 float-y">⚽</div>
+      <div className="font-display text-lg font-extrabold uppercase tracking-[0.1em]">{title}</div>
       <div className="text-sm text-muted-foreground mt-1">{body}</div>
       {cta && (
         <Link
           to={cta.to}
-          className="inline-flex mt-4 items-center rounded-md gold-gradient text-accent-foreground px-4 py-2 text-sm font-semibold"
+          className="btn-gold mt-5"
         >
           {cta.label}
         </Link>

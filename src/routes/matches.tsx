@@ -29,7 +29,18 @@ function MatchesPage() {
   const { data } = useTournament();
   const [filter, setFilter] = useState<(typeof FILTERS)[number]["key"]>("all");
 
-  if (!data) return <AppLayout><div className="text-muted-foreground">Loading…</div></AppLayout>;
+  if (!data) return (
+      <AppLayout>
+        <div className="space-y-4">
+          <div className="h-28 rounded-2xl bg-surface/60 animate-pulse" />
+          <div className="grid gap-3.5 md:grid-cols-2 stagger">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="h-24 rounded-xl bg-surface/50 animate-pulse" />
+            ))}
+          </div>
+        </div>
+      </AppLayout>
+    );
 
   const matches = data.matches.filter((m) => filter === "all" || m.status === filter);
 
@@ -51,10 +62,10 @@ function MatchesPage() {
             key={f.key}
             onClick={() => setFilter(f.key)}
             className={cn(
-              "px-3 py-1.5 rounded-full text-xs font-semibold border transition",
+              "px-4 py-2 rounded-full font-display text-[11px] font-bold uppercase tracking-[0.14em] border transition-all duration-300 ease-out",
               filter === f.key
-                ? "bg-accent text-accent-foreground border-transparent"
-                : "border-border text-muted-foreground hover:text-foreground",
+                ? "gold-gradient text-accent-foreground border-transparent shadow-[0_10px_24px_-14px_var(--gold)] -translate-y-px"
+                : "border-border text-muted-foreground hover:text-foreground hover:border-accent/40",
             )}
           >
             {f.label}
@@ -70,10 +81,10 @@ function MatchesPage() {
         <div className="space-y-8">
           {Array.from(byStage.entries()).map(([stage, list]) => (
             <section key={stage}>
-              <h2 className="text-xs uppercase tracking-widest text-muted-foreground mb-3">
+              <h2 className="section-title text-foreground mb-4">
                 {stageLabel[stage]}
               </h2>
-              <div className="grid gap-3 md:grid-cols-2">
+              <div className="grid gap-3.5 md:grid-cols-2 stagger">
                 {list.map((m) => (
                   <MatchCard key={m.id} match={m} teams={data.teams} goals={data.goals} />
                 ))}

@@ -21,7 +21,18 @@ const STAGES: MatchStage[] = ["r32", "r16", "qf", "sf", "3rd", "final"];
 
 function KnockoutPage() {
   const { data } = useTournament();
-  if (!data) return <AppLayout><div className="text-muted-foreground">Loading…</div></AppLayout>;
+  if (!data) return (
+      <AppLayout>
+        <div className="space-y-4">
+          <div className="h-28 rounded-2xl bg-surface/60 animate-pulse" />
+          <div className="grid gap-3.5 md:grid-cols-2 stagger">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="h-24 rounded-xl bg-surface/50 animate-pulse" />
+            ))}
+          </div>
+        </div>
+      </AppLayout>
+    );
 
   return (
     <AppLayout>
@@ -35,7 +46,7 @@ function KnockoutPage() {
           if (list.length === 0) return null;
           return (
             <div key={stage} className="min-w-[280px] flex-shrink-0 space-y-3">
-              <h2 className="text-xs uppercase tracking-widest text-muted-foreground text-center py-2 border-b border-border">
+              <h2 className="font-display text-[11px] font-bold uppercase tracking-[0.2em] text-accent/90 text-center py-2.5 border-b border-accent/20">
                 {stageLabel[stage]}
               </h2>
               {list.map((m) => (

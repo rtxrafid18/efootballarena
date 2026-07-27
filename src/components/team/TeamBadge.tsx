@@ -24,12 +24,18 @@ export function TeamBadge({
   const logo = (
     <div
       className={cn(
-        "shrink-0 rounded-full flex items-center justify-center overflow-hidden border border-border bg-surface-2 font-semibold",
+        "shrink-0 rounded-full flex items-center justify-center overflow-hidden bg-surface-2 font-display font-bold",
+        "ring-1 ring-border shadow-[0_4px_12px_-6px_rgba(0,0,0,0.9)] transition-transform duration-500 ease-out group-hover:scale-[1.06]",
         px,
       )}
     >
       {team?.logo_url ? (
-        <img src={team.logo_url} alt={team.name} className="h-full w-full object-cover" />
+        <img
+          src={team.logo_url}
+          alt={team.name}
+          loading="lazy"
+          className="h-full w-full object-cover"
+        />
       ) : (
         <span className="text-[0.7em] text-muted-foreground">{initials}</span>
       )}
@@ -41,12 +47,14 @@ export function TeamBadge({
   return (
     <div
       className={cn(
-        "flex items-center gap-2 min-w-0",
+        "flex items-center gap-2.5 min-w-0",
         align === "right" && "flex-row-reverse text-right",
       )}
     >
       {logo}
-      <span className={cn("truncate font-medium", text)}>{team?.name ?? "TBD"}</span>
+      <span className={cn("truncate font-semibold tracking-tight", text)}>
+        {team?.name ?? "TBD"}
+      </span>
     </div>
   );
 }

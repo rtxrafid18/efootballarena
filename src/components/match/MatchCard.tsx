@@ -27,8 +27,7 @@ export function MatchCard({
 
   const isLive = match.status === "live";
   const isFinished = match.status === "finished";
-  const hasPens =
-    match.home_pens !== null && match.away_pens !== null;
+  const hasPens = match.home_pens !== null && match.away_pens !== null;
   const penWinner = hasPens
     ? (match.home_pens ?? 0) > (match.away_pens ?? 0)
       ? home
@@ -39,24 +38,46 @@ export function MatchCard({
     <Link
       to="/matches/$matchId"
       params={{ matchId: match.id }}
-      className="card-elevated overflow-hidden block hover:border-accent/50 transition-colors focus:outline-none focus:ring-2 focus:ring-accent"
+      className={cn(
+        "card-elevated lift group overflow-hidden block focus:outline-none focus-visible:ring-2 focus-visible:ring-accent",
+        isLive && "border-[color-mix(in_oklab,var(--live)_38%,var(--border))]",
+      )}
     >
+      {/* accent rail */}
+      <span
+        className={cn(
+          "absolute left-0 top-0 h-full w-[3px] origin-top scale-y-0 transition-transform duration-500 ease-out group-hover:scale-y-100",
+          isLive ? "bg-[var(--live)] scale-y-100" : "bg-gradient-to-b from-accent to-accent/10",
+        )}
+      />
+
       {/* header */}
-      <div className="flex items-center justify-between px-4 pt-3 pb-2 text-[11px] uppercase tracking-wider text-muted-foreground">
-        <span>{stageLabel[match.stage]}</span>
+      <div className="flex items-center justify-between px-4 pt-3.5 pb-2">
+        <span className="font-display text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
+          {stageLabel[match.stage]}
+        </span>
         <StatusBadge status={match.status} />
       </div>
 
       {/* scoreline */}
-      <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 px-4 py-2">
+      <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 px-4 py-2.5">
         <TeamBadge team={home} />
-        <div className={cn("text-center tabular-nums", compact ? "text-xl" : "text-2xl font-bold")}>
+        <div
+          className={cn(
+            "font-display tabular-nums text-center px-3 py-1 rounded-lg bg-surface-2/70 border border-border/70",
+            compact ? "text-lg font-bold" : "text-2xl font-extrabold",
+          )}
+        >
           {isFinished || isLive ? (
-            <span className={isLive ? "text-[var(--live)]" : ""}>
-              {match.home_score}<span className="mx-2 text-muted-foreground">-</span>{match.away_score}
+            <span className={isLive ? "text-[var(--live)]" : "text-foreground"}>
+              {match.home_score}
+              <span className="mx-1.5 text-muted-foreground/70">:</span>
+              {match.away_score}
             </span>
           ) : (
-            <span className="text-muted-foreground text-sm">vs</span>
+            <span className="text-muted-foreground text-xs font-bold tracking-[0.15em] uppercase">
+              vs
+            </span>
           )}
         </div>
         <TeamBadge team={away} align="right" />
@@ -64,14 +85,14 @@ export function MatchCard({
 
       {/* penalties */}
       {hasPens && (
-        <div className="px-4 pb-2 -mt-1 text-center text-[11px] text-muted-foreground">
-          After penalties:{" "}
+        <div className="px-4 pb-2 text-center text-[11px] text-muted-foreground">
+          Penalties{" "}
           <span className="text-foreground font-semibold tabular-nums">
-            {match.home_pens} - {match.away_pens}
+            {match.home_pens} – {match.away_pens}
           </span>
           {penWinner && (
             <span className="ml-2 text-accent font-semibold">
-              · {penWinner.short_name ?? penWinner.name} win
+              · {penWinner.short_name ?? penWinner.name} advance
             </span>
           )}
         </div>
@@ -79,20 +100,25 @@ export function MatchCard({
 
       {/* goals timeline */}
       {matchGoals.length > 0 && (
-        <div className="grid grid-cols-2 gap-2 px-4 pb-3 pt-2 border-t border-border/60 text-xs">
-          <ul className="space-y-1">
+        <div className="grid grid-cols-2 gap-3 px-4 pb-3.5 pt-2.5 mt-1 border-t border-border/60 text-xs">
+          <ul className="space-y-1.5">
             {homeGoals.map((g) => (
-              <li key={g.id} className="text-foreground/90">
-                <span className="text-accent">⚽</span> {g.scorer_name}{" "}
-                <span className="text-muted-foreground">{g.minute}'</span>
+              <li key={g.id} className="flex items-center gap-1.5 text-foreground/90">
+                <span className="text-accent text-[10px]">⚽</span>
+                <span className="truncate">{g.scorer_name}</span>
+                <span className="tabular-nums text-muted-foreground">{g.minute}'</span>
               </li>
             ))}
           </ul>
-          <ul className="space-y-1 text-right">
+          <ul className="space-y-1.5">
             {awayGoals.map((g) => (
-              <li key={g.id} className="text-foreground/90">
-                <span className="text-muted-foreground">{g.minute}'</span> {g.scorer_name}{" "}
-                <span className="text-accent">⚽</span>
+              <li
+                key={g.id}
+                className="flex items-center justify-end gap-1.5 text-foreground/90"
+              >
+                <span className="tabular-nums text-muted-foreground">{g.minute}'</span>
+                <span className="truncate">{g.scorer_name}</span>
+                <span className="text-accent text-[10px]">⚽</span>
               </li>
             ))}
           </ul>
@@ -100,8 +126,9 @@ export function MatchCard({
       )}
 
       {match.mvp_player_name && (
-        <div className="px-4 pb-3 -mt-1 text-[11px] text-accent flex items-center gap-1">
-          ★ MVP: <span className="font-medium">{match.mvp_player_name}</span>
+        <div className="px-4 pb-3.5 -mt-1 text-[11px] text-accent flex items-center gap-1.5">
+          <span className="trophy-glow">★</span> MVP
+          <span className="font-semibold text-foreground/90">{match.mvp_player_name}</span>
         </div>
       )}
     </Link>
@@ -109,21 +136,22 @@ export function MatchCard({
 }
 
 function StatusBadge({ status }: { status: Match["status"] }) {
+  const base =
+    "inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 font-display text-[9px] font-bold uppercase tracking-[0.16em]";
   if (status === "live")
     return (
-      <span className="inline-flex items-center gap-1.5 rounded-full bg-[color-mix(in_oklab,var(--live)_20%,transparent)] px-2 py-0.5 text-[10px] font-bold text-[var(--live)]">
-        <span className="live-dot inline-block h-1.5 w-1.5 rounded-full bg-[var(--live)]" /> LIVE
+      <span
+        className={cn(
+          base,
+          "live-ring bg-[color-mix(in_oklab,var(--live)_18%,transparent)] text-[var(--live)]",
+        )}
+      >
+        <span className="live-dot inline-block h-1.5 w-1.5 rounded-full bg-[var(--live)]" /> Live
       </span>
     );
   if (status === "finished")
-    return (
-      <span className="inline-flex items-center gap-1 rounded-full bg-surface-2 px-2 py-0.5 text-[10px] font-semibold text-muted-foreground">
-        FT
-      </span>
-    );
+    return <span className={cn(base, "bg-surface-2 text-muted-foreground")}>Full time</span>;
   return (
-    <span className="inline-flex items-center gap-1 rounded-full bg-surface-2 px-2 py-0.5 text-[10px] font-semibold text-muted-foreground">
-      SCHEDULED
-    </span>
+    <span className={cn(base, "bg-surface-2 text-muted-foreground")}>Upcoming</span>
   );
 }
