@@ -15,14 +15,15 @@ export function LiveTicker() {
   const items = [...live, ...live];
 
   return (
-    <div className="sticky top-14 z-20 border-b border-border bg-[color-mix(in_oklab,var(--live)_10%,var(--background))] backdrop-blur-xl overflow-hidden">
-      <div className="max-w-6xl mx-auto flex items-center gap-3 px-4 h-9">
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-[var(--live)] px-2 py-0.5 text-[10px] font-bold text-white shrink-0">
+    <div className="sticky top-16 z-20 border-b border-border/70 bg-[color-mix(in_oklab,var(--live)_7%,var(--background))] backdrop-blur-xl overflow-hidden">
+      <div className="max-w-6xl mx-auto flex items-center gap-3 px-4 h-10">
+        <span className="live-ring inline-flex items-center gap-1.5 rounded-full bg-[var(--live)] px-2.5 py-1 font-display text-[9px] font-bold uppercase tracking-[0.18em] text-white shrink-0">
           <span className="live-dot inline-block h-1.5 w-1.5 rounded-full bg-white" />
-          LIVE
+          Live
         </span>
-        <div className="relative flex-1 overflow-hidden">
-          <div className="flex gap-6 whitespace-nowrap animate-[ticker_40s_linear_infinite] hover:[animation-play-state:paused]">
+        <div className="relative flex-1 overflow-hidden [mask-image:linear-gradient(90deg,transparent,black_4%,black_96%,transparent)]">
+          <div className="flex gap-7 whitespace-nowrap animate-[ticker_45s_linear_infinite] hover:[animation-play-state:paused]">
+
             {items.map((m, i) => {
               const home = m.home_team_id ? teamById.get(m.home_team_id) : null;
               const away = m.away_team_id ? teamById.get(m.away_team_id) : null;
