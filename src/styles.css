@@ -488,6 +488,52 @@
 .float-y { animation: float-y 3.4s ease-in-out infinite; display: inline-block; }
 .trophy-glow { animation: trophy-glow 3.4s ease-in-out infinite; display: inline-block; }
 
+/* ============ Brand ball mark ============ */
+@keyframes ball-roll {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+@keyframes ball-bob {
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  50% { transform: translate3d(0, -2px, 0); }
+}
+@keyframes ball-sheen {
+  0% { transform: translate3d(-160%, 0, 0) rotate(18deg); }
+  55%, 100% { transform: translate3d(160%, 0, 0) rotate(18deg); }
+}
+
+.ball-mark {
+  position: relative;
+  display: block;
+  height: 100%;
+  width: 100%;
+  border-radius: 999px;
+  overflow: hidden;
+  animation: ball-bob 3.6s ease-in-out infinite;
+  will-change: transform;
+}
+.ball-mark-svg {
+  display: block;
+  transform-origin: 50% 50%;
+  animation: ball-roll 8s linear infinite;
+  will-change: transform;
+  backface-visibility: hidden;
+}
+.ball-mark-sheen {
+  position: absolute;
+  inset: -20%;
+  pointer-events: none;
+  background: linear-gradient(
+    100deg,
+    transparent 40%,
+    color-mix(in oklab, white 42%, transparent) 50%,
+    transparent 60%
+  );
+  animation: ball-sheen 5.5s var(--ease-out-expo) infinite;
+}
+.group:hover .ball-mark-svg { animation-duration: 2.6s; }
+
+
 /* ============ Mobile bottom nav ============ */
 @utility dock-bar {
   background:
