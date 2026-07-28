@@ -125,7 +125,7 @@ export function PageHeader({
   action?: ReactNode;
 }) {
   return (
-    <div className="wc-banner mb-7 p-6 md:p-9 reveal">
+    <div className="wc-banner mb-7 p-6 md:p-9 reveal-banner">
       <div className="absolute inset-0 confetti-dots opacity-40 pointer-events-none" aria-hidden />
       <div className="relative flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div className="min-w-0">

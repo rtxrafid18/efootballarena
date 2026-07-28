@@ -32,7 +32,7 @@ function AdminPage() {
       <AppLayout>
         <div className="space-y-4">
           <div className="h-28 rounded-2xl bg-surface/60 animate-pulse" />
-          <div className="grid gap-3.5 md:grid-cols-2 stagger">
+          <div className="grid gap-3.5 md:grid-cols-2 stagger-pop">
             {Array.from({ length: 4 }).map((_, i) => (
               <div key={i} className="h-24 rounded-xl bg-surface/50 animate-pulse" />
             ))}
