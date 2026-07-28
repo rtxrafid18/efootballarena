@@ -4,6 +4,8 @@ import { cn } from "@/lib/utils";
 import { Trophy, ShieldHalf, LayoutGrid, Swords, Award, Settings } from "lucide-react";
 import { GoalCelebration } from "@/components/match/GoalCelebration";
 import { LiveTicker } from "@/components/match/LiveTicker";
+import { BallMark } from "@/components/brand/BallMark";
+
 
 const nav = [
   { to: "/", label: "Home", icon: Trophy },
