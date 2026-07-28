@@ -33,7 +33,7 @@ function MatchesPage() {
       <AppLayout>
         <div className="space-y-4">
           <div className="h-28 rounded-2xl bg-surface/60 animate-pulse" />
-          <div className="grid gap-3.5 md:grid-cols-2 stagger">
+          <div className="grid gap-3.5 md:grid-cols-2 stagger-kick">
             {Array.from({ length: 4 }).map((_, i) => (
               <div key={i} className="h-24 rounded-xl bg-surface/50 animate-pulse" />
             ))}
@@ -84,7 +84,7 @@ function MatchesPage() {
               <h2 className="section-title text-foreground mb-4">
                 {stageLabel[stage]}
               </h2>
-              <div className="grid gap-3.5 md:grid-cols-2 stagger">
+              <div className="grid gap-3.5 md:grid-cols-2 stagger-kick">
                 {list.map((m) => (
                   <MatchCard key={m.id} match={m} teams={data.teams} goals={data.goals} />
                 ))}
