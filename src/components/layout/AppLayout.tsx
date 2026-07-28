@@ -24,11 +24,10 @@ export function AppLayout({ children }: { children: ReactNode }) {
         <div className="absolute inset-0 pitch-stripes opacity-40 pointer-events-none" />
         <div className="relative max-w-6xl mx-auto px-4 h-16 flex items-center justify-between gap-4">
           <Link to="/" className="flex items-center gap-3 group">
-            <div className="h-10 w-10 rounded-xl gold-frame flex items-center justify-center overflow-hidden transition-transform duration-500 group-hover:scale-105">
-              <span className="ball-spin text-lg" aria-hidden>
-                ⚽
-              </span>
+            <div className="h-10 w-10 rounded-full gold-frame !rounded-full p-[3px] transition-transform duration-500 group-hover:scale-105">
+              <BallMark />
             </div>
+
             <div className="leading-none">
               <div className="font-display text-[15px] font-extrabold tracking-[0.14em] uppercase gold-shimmer-text">
                 eFootball Cup
