@@ -84,9 +84,9 @@ export function AppLayout({ children }: { children: ReactNode }) {
 
       <GoalCelebration />
 
-      {/* Mobile bottom nav */}
-      <nav className="md:hidden fixed bottom-0 inset-x-0 z-30 glass border-t border-border">
-        <div className="grid grid-cols-6">
+      {/* Mobile bottom dock */}
+      <nav className="md:hidden fixed bottom-0 inset-x-0 z-30 px-3 pb-[calc(env(safe-area-inset-bottom)+10px)] pt-2 bg-gradient-to-t from-background via-background/85 to-transparent">
+        <div className="dock-bar grid grid-cols-6 gap-0.5 p-1.5">
           {nav.map((n) => {
             const active = n.to === "/" ? pathname === "/" : pathname.startsWith(n.to);
             const Icon = n.icon;
@@ -94,26 +94,23 @@ export function AppLayout({ children }: { children: ReactNode }) {
               <Link
                 key={n.to}
                 to={n.to}
-                className={cn(
-                  "relative flex flex-col items-center justify-center py-2.5 text-[9px] font-semibold uppercase tracking-wider gap-1 transition-colors duration-300",
-                  active ? "text-accent" : "text-muted-foreground",
-                )}
+                className={cn("dock-item", active && "dock-item-active")}
               >
-                {active && (
-                  <span className="absolute top-0 h-[2px] w-8 rounded-full bg-accent" />
-                )}
                 <Icon
                   className={cn(
-                    "h-[18px] w-[18px] transition-transform duration-500 ease-out",
-                    active && "-translate-y-0.5 scale-110",
+                    "h-[19px] w-[19px] transition-transform duration-500 ease-out",
+                    active && "scale-110",
                   )}
                 />
-                {n.label}
+                <span className="text-[9px] font-bold uppercase tracking-[0.06em] leading-none">
+                  {n.label}
+                </span>
               </Link>
             );
           })}
         </div>
       </nav>
+
     </div>
   );
 }
@@ -128,7 +125,7 @@ export function PageHeader({
   action?: ReactNode;
 }) {
   return (
-    <div className="wc-banner mb-7 p-6 md:p-9 reveal">
+    <div className="wc-banner mb-7 p-6 md:p-9 reveal-banner">
       <div className="absolute inset-0 confetti-dots opacity-40 pointer-events-none" aria-hidden />
       <div className="relative flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div className="min-w-0">

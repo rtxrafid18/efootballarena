@@ -22,7 +22,7 @@ function GroupsPage() {
       <AppLayout>
         <div className="space-y-4">
           <div className="h-28 rounded-2xl bg-surface/60 animate-pulse" />
-          <div className="grid gap-3.5 md:grid-cols-2 stagger">
+          <div className="grid gap-3.5 md:grid-cols-2 stagger-tilt">
             {Array.from({ length: 4 }).map((_, i) => (
               <div key={i} className="h-24 rounded-xl bg-surface/50 animate-pulse" />
             ))}
@@ -45,7 +45,7 @@ function GroupsPage() {
   return (
     <AppLayout>
       <PageHeader title="Group Stage" subtitle="Top 2 from each group advance" />
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3 stagger">
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3 stagger-tilt">
         {data.groups.map((g) => {
           const standings = groupStandings(g.id, data);
           return (

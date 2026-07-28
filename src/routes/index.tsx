@@ -24,7 +24,7 @@ function HomePage() {
       <AppLayout>
         <div className="space-y-4">
           <div className="h-32 rounded-2xl bg-surface/60 animate-pulse" />
-          <div className="grid gap-3.5 md:grid-cols-2 stagger">
+          <div className="grid gap-3.5 md:grid-cols-2 stagger-flip">
             {Array.from({ length: 4 }).map((_, i) => (
               <div key={i} className="h-28 rounded-xl bg-surface/50 animate-pulse" />
             ))}
@@ -57,7 +57,7 @@ function HomePage() {
       {live.length > 0 && (
         <section className="mb-8">
           <SectionTitle title="Live now" tone="live" />
-          <div className="grid gap-3.5 md:grid-cols-2 stagger">
+          <div className="grid gap-3.5 md:grid-cols-2 stagger-flip">
             {live.map((m) => (
               <MatchCard key={m.id} match={m} teams={data.teams} goals={data.goals} />
             ))}
@@ -70,7 +70,7 @@ function HomePage() {
           {recent.length > 0 && (
             <div>
               <SectionTitle title="Latest results" link={{ to: "/matches", label: "All matches" }} />
-              <div className="grid gap-3.5 md:grid-cols-2 stagger">
+              <div className="grid gap-3.5 md:grid-cols-2 stagger-flip">
                 {recent.map((m) => (
                   <MatchCard key={m.id} match={m} teams={data.teams} goals={data.goals} />
                 ))}
@@ -80,7 +80,7 @@ function HomePage() {
           {upcoming.length > 0 && (
             <div>
               <SectionTitle title="Upcoming" />
-              <div className="grid gap-3.5 md:grid-cols-2 stagger">
+              <div className="grid gap-3.5 md:grid-cols-2 stagger-flip">
                 {upcoming.map((m) => (
                   <MatchCard key={m.id} match={m} teams={data.teams} goals={data.goals} compact />
                 ))}
@@ -185,7 +185,7 @@ function LeaderCard({
       {rows.length === 0 ? (
         <div className="text-xs text-muted-foreground">No data yet</div>
       ) : (
-        <ol className="stagger space-y-1">
+        <ol className="stagger-rank space-y-1">
           {rows.map((r, i) => (
             <li
               key={i}

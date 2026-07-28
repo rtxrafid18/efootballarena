@@ -406,18 +406,80 @@
   100% { transform: translateX(140%); }
 }
 
+/* --- Unique per-section entrance motions --- */
+@keyframes kick-in {
+  0% { opacity: 0; transform: translateX(-26px) rotate(-2.5deg) scale(0.97); }
+  60% { opacity: 1; transform: translateX(3px) rotate(0.4deg) scale(1.005); }
+  100% { opacity: 1; transform: none; }
+}
+@keyframes card-flip-up {
+  0% { opacity: 0; transform: perspective(900px) rotateX(-18deg) translateY(18px); }
+  100% { opacity: 1; transform: perspective(900px) rotateX(0) translateY(0); }
+}
+@keyframes tilt-slot {
+  0% { opacity: 0; transform: perspective(900px) rotateY(9deg) translateX(20px); }
+  100% { opacity: 1; transform: perspective(900px) rotateY(0) translateX(0); }
+}
+@keyframes trophy-pop {
+  0% { opacity: 0; transform: scale(0.9) translateY(12px); filter: blur(6px); }
+  70% { opacity: 1; transform: scale(1.015) translateY(-2px); filter: blur(0); }
+  100% { opacity: 1; transform: none; }
+}
+@keyframes rank-slide {
+  0% { opacity: 0; transform: translateX(-14px); clip-path: inset(0 100% 0 0); }
+  100% { opacity: 1; transform: none; clip-path: inset(0 0 0 0); }
+}
+@keyframes banner-unfurl {
+  0% { opacity: 0; transform: translateY(-16px) scaleY(0.92); transform-origin: top; }
+  100% { opacity: 1; transform: none; }
+}
+@keyframes bracket-grow {
+  0% { opacity: 0; transform: translateY(16px) scale(0.94); }
+  100% { opacity: 1; transform: none; }
+}
+@keyframes nav-pop {
+  0% { transform: scale(0.6); opacity: 0; }
+  60% { transform: scale(1.12); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+@keyframes glow-breathe {
+  0%, 100% { opacity: 0.35; }
+  50% { opacity: 0.75; }
+}
+
 .reveal { animation: reveal-up 0.6s var(--ease-out-expo) both; }
 .reveal-fade { animation: reveal-fade 0.7s ease both; }
+.reveal-banner { animation: banner-unfurl 0.75s var(--ease-out-expo) both; }
+
 .stagger > * { animation: reveal-up 0.55s var(--ease-out-expo) both; }
-.stagger > *:nth-child(1) { animation-delay: 0.04s; }
-.stagger > *:nth-child(2) { animation-delay: 0.09s; }
-.stagger > *:nth-child(3) { animation-delay: 0.14s; }
-.stagger > *:nth-child(4) { animation-delay: 0.19s; }
-.stagger > *:nth-child(5) { animation-delay: 0.24s; }
-.stagger > *:nth-child(6) { animation-delay: 0.29s; }
-.stagger > *:nth-child(7) { animation-delay: 0.34s; }
-.stagger > *:nth-child(8) { animation-delay: 0.39s; }
-.stagger > *:nth-child(n + 9) { animation-delay: 0.44s; }
+.stagger-kick > * { animation: kick-in 0.66s var(--ease-out-expo) both; }
+.stagger-flip > * { animation: card-flip-up 0.7s var(--ease-out-expo) both; }
+.stagger-tilt > * { animation: tilt-slot 0.66s var(--ease-out-expo) both; }
+.stagger-pop > * { animation: trophy-pop 0.68s var(--ease-spring) both; }
+.stagger-rank > * { animation: rank-slide 0.6s var(--ease-out-expo) both; }
+.stagger-bracket > * { animation: bracket-grow 0.62s var(--ease-spring) both; }
+
+.stagger > *:nth-child(1), .stagger-kick > *:nth-child(1), .stagger-flip > *:nth-child(1),
+.stagger-tilt > *:nth-child(1), .stagger-pop > *:nth-child(1), .stagger-rank > *:nth-child(1),
+.stagger-bracket > *:nth-child(1) { animation-delay: 0.04s; }
+.stagger > *:nth-child(2), .stagger-kick > *:nth-child(2), .stagger-flip > *:nth-child(2),
+.stagger-tilt > *:nth-child(2), .stagger-pop > *:nth-child(2), .stagger-rank > *:nth-child(2),
+.stagger-bracket > *:nth-child(2) { animation-delay: 0.09s; }
+.stagger > *:nth-child(3), .stagger-kick > *:nth-child(3), .stagger-flip > *:nth-child(3),
+.stagger-tilt > *:nth-child(3), .stagger-pop > *:nth-child(3), .stagger-rank > *:nth-child(3),
+.stagger-bracket > *:nth-child(3) { animation-delay: 0.14s; }
+.stagger > *:nth-child(4), .stagger-kick > *:nth-child(4), .stagger-flip > *:nth-child(4),
+.stagger-tilt > *:nth-child(4), .stagger-pop > *:nth-child(4), .stagger-rank > *:nth-child(4),
+.stagger-bracket > *:nth-child(4) { animation-delay: 0.19s; }
+.stagger > *:nth-child(5), .stagger-kick > *:nth-child(5), .stagger-flip > *:nth-child(5),
+.stagger-tilt > *:nth-child(5), .stagger-pop > *:nth-child(5), .stagger-rank > *:nth-child(5),
+.stagger-bracket > *:nth-child(5) { animation-delay: 0.24s; }
+.stagger > *:nth-child(6), .stagger-kick > *:nth-child(6), .stagger-flip > *:nth-child(6),
+.stagger-tilt > *:nth-child(6), .stagger-pop > *:nth-child(6), .stagger-rank > *:nth-child(6),
+.stagger-bracket > *:nth-child(6) { animation-delay: 0.29s; }
+.stagger > *:nth-child(n + 7), .stagger-kick > *:nth-child(n + 7), .stagger-flip > *:nth-child(n + 7),
+.stagger-tilt > *:nth-child(n + 7), .stagger-pop > *:nth-child(n + 7), .stagger-rank > *:nth-child(n + 7),
+.stagger-bracket > *:nth-child(n + 7) { animation-delay: 0.34s; }
 
 .live-dot { animation: live-pulse 1.4s cubic-bezier(0.4, 0, 0.2, 1) infinite; }
 .live-ring { animation: live-ring 1.8s var(--ease-out-expo) infinite; }
@@ -425,6 +487,50 @@
 .ball-spin { animation: ball-spin 9s linear infinite; display: inline-block; }
 .float-y { animation: float-y 3.4s ease-in-out infinite; display: inline-block; }
 .trophy-glow { animation: trophy-glow 3.4s ease-in-out infinite; display: inline-block; }
+
+/* ============ Mobile bottom nav ============ */
+@utility dock-bar {
+  background:
+    linear-gradient(180deg, color-mix(in oklab, var(--surface-2) 82%, transparent), color-mix(in oklab, var(--background) 94%, transparent));
+  backdrop-filter: blur(22px) saturate(150%);
+  border: 1px solid color-mix(in oklab, var(--gold) 18%, var(--border));
+  border-radius: 22px;
+  box-shadow:
+    0 1px 0 0 color-mix(in oklab, white 8%, transparent) inset,
+    0 22px 42px -22px color-mix(in oklab, black 95%, transparent);
+}
+
+@utility dock-item {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  padding: 0.55rem 0.15rem 0.5rem;
+  border-radius: 16px;
+  color: var(--muted-foreground);
+  transition:
+    color 0.35s var(--ease-out-expo),
+    transform 0.4s var(--ease-spring);
+  &:active { transform: scale(0.92); }
+}
+
+@utility dock-item-active {
+  color: var(--accent-foreground);
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 4px 6px;
+    border-radius: 14px;
+    background-image: linear-gradient(135deg, oklch(0.9 0.13 90), oklch(0.74 0.15 72));
+    box-shadow: 0 8px 20px -10px color-mix(in oklab, var(--gold) 90%, transparent);
+    animation: nav-pop 0.45s var(--ease-spring) both;
+    z-index: 0;
+  }
+  & > * { position: relative; z-index: 1; }
+}
+
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
