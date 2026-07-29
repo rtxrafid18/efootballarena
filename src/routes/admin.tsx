@@ -1,13 +1,15 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { AppLayout, PageHeader } from "@/components/layout/AppLayout";
 import { useTournament, useInvalidateTournament } from "@/hooks/useTournament";
-import { supabase } from "@/integrations/supabase/client";
+import { write } from "@/lib/admin-client";
+import { getAdminStatus, unlockAdmin, lockAdmin } from "@/lib/admin.functions";
 import { useState } from "react";
 import { toast, Toaster } from "sonner";
 import { cn } from "@/lib/utils";
 import type { Match, MatchStage, MatchStatus, Team } from "@/lib/tournament";
 import { stageLabel } from "@/lib/tournament";
-import { Plus, Trash2, Save } from "lucide-react";
+import { Plus, Trash2, Save, Lock, ShieldCheck } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({
@@ -27,8 +29,23 @@ type Tab = (typeof TABS)[number];
 function AdminPage() {
   const { data } = useTournament();
   const [tab, setTab] = useState<Tab>("Settings");
+  const { data: status, refetch } = useQuery({
+    queryKey: ["admin-status"],
+    queryFn: () => getAdminStatus(),
+    staleTime: 0,
+  });
 
-  if (!data) return (
+  if (status && !status.unlocked) {
+    return (
+      <AppLayout>
+        <Toaster theme="dark" position="top-right" richColors />
+        <PageHeader title="Admin Panel" subtitle="Protected — enter the admin passcode" />
+        <PasscodeGate onUnlocked={() => refetch()} />
+      </AppLayout>
+    );
+  }
+
+  if (!data || !status) return (
       <AppLayout>
         <div className="space-y-4">
           <div className="h-28 rounded-2xl bg-surface/60 animate-pulse" />
@@ -44,7 +61,20 @@ function AdminPage() {
   return (
     <AppLayout>
       <Toaster theme="dark" position="top-right" richColors />
-      <PageHeader title="Admin Panel" subtitle="Fully open — anyone with the link can edit" />
+      <PageHeader title="Admin Panel" subtitle="Unlocked — editing enabled on this device" />
+
+      <div className="flex justify-end mb-3">
+        <button
+          onClick={async () => {
+            await lockAdmin();
+            refetch();
+          }}
+          className="inline-flex items-center gap-2 h-9 px-3 rounded-md border border-border text-xs font-semibold uppercase tracking-wider text-muted-foreground hover:text-foreground hover:border-accent transition"
+        >
+          <Lock className="h-3.5 w-3.5" /> Lock admin
+        </button>
+      </div>
+
 
       <div className="flex gap-2 mb-6 overflow-x-auto">
         {TABS.map((t) => (
@@ -72,6 +102,59 @@ function AdminPage() {
   );
 }
 
+/* ---------------- Passcode gate ---------------- */
+
+function PasscodeGate({ onUnlocked }: { onUnlocked: () => void }) {
+  const [passcode, setPasscode] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!passcode) return;
+    setBusy(true);
+    try {
+      const res = await unlockAdmin({ data: { passcode } });
+      if (!res.ok) {
+        toast.error("Incorrect passcode");
+        setPasscode("");
+        return;
+      }
+      toast.success("Admin unlocked");
+      onUnlocked();
+    } catch {
+      toast.error("Could not verify passcode");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <form onSubmit={submit} className="card-elevated p-6 max-w-md mx-auto space-y-4 text-center">
+      <ShieldCheck className="h-8 w-8 mx-auto text-accent" />
+      <div>
+        <div className="font-display text-lg font-bold">Admin access</div>
+        <p className="text-xs text-muted-foreground mt-1">
+          Editing is locked. Enter the shared admin passcode to manage the tournament.
+        </p>
+      </div>
+      <Input
+        type="password"
+        autoComplete="current-password"
+        placeholder="Admin passcode"
+        value={passcode}
+        onChange={(e) => setPasscode(e.target.value)}
+      />
+      <button
+        type="submit"
+        disabled={busy}
+        className="w-full inline-flex items-center justify-center gap-2 h-10 px-4 rounded-md gold-gradient text-accent-foreground text-sm font-semibold hover:opacity-90 transition disabled:opacity-60"
+      >
+        <Lock className="h-4 w-4" /> {busy ? "Checking…" : "Unlock admin"}
+      </button>
+    </form>
+  );
+}
+
 /* ---------------- Settings ---------------- */
 
 function SettingsTab({ data }: { data: ReturnType<typeof useTournament>["data"] & object }) {
@@ -80,10 +163,10 @@ function SettingsTab({ data }: { data: ReturnType<typeof useTournament>["data"] 
   const [format, setFormat] = useState(data.settings.tournament_format);
 
   async function save() {
-    const { error } = await supabase.from("settings").update({
+    const { error } = await write("settings", "update", {
       tournament_name: name,
       tournament_format: format,
-    }).eq("id", 1);
+    }, 1);
     if (error) return toast.error(error.message);
     toast.success("Settings updated");
     refresh();
@@ -134,7 +217,7 @@ function TeamsTab({ data }: { data: ReturnType<typeof useTournament>["data"] & o
 
   async function addTeam() {
     if (!name.trim()) return toast.error("Team name required");
-    const { error } = await supabase.from("teams").insert({
+    const { error } = await write("teams", "insert", {
       name: name.trim(),
       short_name: shortName.trim() || null,
       logo_url: logoUrl.trim() || null,
@@ -147,14 +230,14 @@ function TeamsTab({ data }: { data: ReturnType<typeof useTournament>["data"] & o
   }
 
   async function updateTeamGroup(teamId: string, gid: string) {
-    const { error } = await supabase.from("teams").update({ group_id: gid || null }).eq("id", teamId);
+    const { error } = await write("teams", "update", { group_id: gid || null }, teamId);
     if (error) return toast.error(error.message);
     refresh();
   }
 
   async function deleteTeam(id: string) {
     if (!confirm("Delete team? This removes their matches & goals.")) return;
-    const { error } = await supabase.from("teams").delete().eq("id", id);
+    const { error } = await write("teams", "delete", undefined, id);
     if (error) return toast.error(error.message);
     toast.success("Deleted");
     refresh();
@@ -221,7 +304,7 @@ function MatchesTab({ data }: { data: ReturnType<typeof useTournament>["data"] &
 
   async function createMatch() {
     if (!homeId || !awayId || homeId === awayId) return toast.error("Pick two different teams");
-    const { error } = await supabase.from("matches").insert({
+    const { error } = await write("matches", "insert", {
       stage,
       group_id: stage === "group" ? groupId || null : null,
       home_team_id: homeId,
@@ -291,13 +374,13 @@ function MatchAdminRow({
   const away = teams.find((t) => t.id === match.away_team_id);
 
   async function updateMatch(patch: Partial<Match>) {
-    const { error } = await supabase.from("matches").update(patch).eq("id", match.id);
+    const { error } = await write("matches", "update", patch, match.id);
     if (error) return toast.error(error.message);
     onChange();
   }
   async function deleteMatch() {
     if (!confirm("Delete match?")) return;
-    const { error } = await supabase.from("matches").delete().eq("id", match.id);
+    const { error } = await write("matches", "delete", undefined, match.id);
     if (error) return toast.error(error.message);
     toast.success("Deleted"); onChange();
   }
@@ -408,7 +491,7 @@ function GoalsEditor({
 
   async function addGoal() {
     if (!teamId || !scorer.trim()) return toast.error("Team + scorer required");
-    const { error } = await supabase.from("goals").insert({
+    const { error } = await write("goals", "insert", {
       match_id: matchId, team_id: teamId, scorer_name: scorer.trim(), minute,
     });
     if (error) return toast.error(error.message);
@@ -416,7 +499,7 @@ function GoalsEditor({
     onChange();
   }
   async function removeGoal(id: string) {
-    const { error } = await supabase.from("goals").delete().eq("id", id);
+    const { error } = await write("goals", "delete", undefined, id);
     if (error) return toast.error(error.message);
     onChange();
   }
@@ -464,19 +547,19 @@ function AssistsTab({ data }: { data: ReturnType<typeof useTournament>["data"] &
 
   async function add() {
     if (!name.trim()) return toast.error("Name required");
-    const { error } = await supabase.from("assist_stats").insert({
+    const { error } = await write("assist_stats", "insert", {
       player_name: name.trim(), team_id: teamId || null, assists,
     });
     if (error) return toast.error(error.message);
     setName(""); setAssists(0); refresh(); toast.success("Added");
   }
   async function update(id: string, patch: { assists?: number; team_id?: string | null }) {
-    const { error } = await supabase.from("assist_stats").update(patch).eq("id", id);
+    const { error } = await write("assist_stats", "update", patch, id);
     if (error) return toast.error(error.message);
     refresh();
   }
   async function remove(id: string) {
-    const { error } = await supabase.from("assist_stats").delete().eq("id", id);
+    const { error } = await write("assist_stats", "delete", undefined, id);
     if (error) return toast.error(error.message);
     refresh();
   }
@@ -530,19 +613,19 @@ function GkTab({ data }: { data: ReturnType<typeof useTournament>["data"] & obje
 
   async function add() {
     if (!name.trim()) return toast.error("Name required");
-    const { error } = await supabase.from("gk_stats").insert({
+    const { error } = await write("gk_stats", "insert", {
       player_name: name.trim(), team_id: teamId || null, clean_sheets: cs, saves,
     });
     if (error) return toast.error(error.message);
     setName(""); setCs(0); setSaves(0); refresh(); toast.success("Added");
   }
   async function update(id: string, patch: { clean_sheets?: number; saves?: number; team_id?: string | null }) {
-    const { error } = await supabase.from("gk_stats").update(patch).eq("id", id);
+    const { error } = await write("gk_stats", "update", patch, id);
     if (error) return toast.error(error.message);
     refresh();
   }
   async function remove(id: string) {
-    const { error } = await supabase.from("gk_stats").delete().eq("id", id);
+    const { error } = await write("gk_stats", "delete", undefined, id);
     if (error) return toast.error(error.message);
     refresh();
   }
