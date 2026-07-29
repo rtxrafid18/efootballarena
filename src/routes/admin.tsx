@@ -28,8 +28,23 @@ type Tab = (typeof TABS)[number];
 function AdminPage() {
   const { data } = useTournament();
   const [tab, setTab] = useState<Tab>("Settings");
+  const { data: status, refetch } = useQuery({
+    queryKey: ["admin-status"],
+    queryFn: () => getAdminStatus(),
+    staleTime: 0,
+  });
 
-  if (!data) return (
+  if (status && !status.unlocked) {
+    return (
+      <AppLayout>
+        <Toaster theme="dark" position="top-right" richColors />
+        <PageHeader title="Admin Panel" subtitle="Protected — enter the admin passcode" />
+        <PasscodeGate onUnlocked={() => refetch()} />
+      </AppLayout>
+    );
+  }
+
+  if (!data || !status) return (
       <AppLayout>
         <div className="space-y-4">
           <div className="h-28 rounded-2xl bg-surface/60 animate-pulse" />
@@ -45,7 +60,20 @@ function AdminPage() {
   return (
     <AppLayout>
       <Toaster theme="dark" position="top-right" richColors />
-      <PageHeader title="Admin Panel" subtitle="Fully open — anyone with the link can edit" />
+      <PageHeader title="Admin Panel" subtitle="Unlocked — editing enabled on this device" />
+
+      <div className="flex justify-end mb-3">
+        <button
+          onClick={async () => {
+            await lockAdmin();
+            refetch();
+          }}
+          className="inline-flex items-center gap-2 h-9 px-3 rounded-md border border-border text-xs font-semibold uppercase tracking-wider text-muted-foreground hover:text-foreground hover:border-accent transition"
+        >
+          <Lock className="h-3.5 w-3.5" /> Lock admin
+        </button>
+      </div>
+
 
       <div className="flex gap-2 mb-6 overflow-x-auto">
         {TABS.map((t) => (
