@@ -8,7 +8,8 @@ import { toast, Toaster } from "sonner";
 import { cn } from "@/lib/utils";
 import type { Match, MatchStage, MatchStatus, Team } from "@/lib/tournament";
 import { stageLabel } from "@/lib/tournament";
-import { Plus, Trash2, Save } from "lucide-react";
+import { Plus, Trash2, Save, Lock, ShieldCheck } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({
@@ -98,6 +99,59 @@ function AdminPage() {
       {tab === "Assists" && <AssistsTab data={data} />}
       {tab === "Goalkeepers" && <GkTab data={data} />}
     </AppLayout>
+  );
+}
+
+/* ---------------- Passcode gate ---------------- */
+
+function PasscodeGate({ onUnlocked }: { onUnlocked: () => void }) {
+  const [passcode, setPasscode] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!passcode) return;
+    setBusy(true);
+    try {
+      const res = await unlockAdmin({ data: { passcode } });
+      if (!res.ok) {
+        toast.error("Incorrect passcode");
+        setPasscode("");
+        return;
+      }
+      toast.success("Admin unlocked");
+      onUnlocked();
+    } catch {
+      toast.error("Could not verify passcode");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <form onSubmit={submit} className="card-elevated p-6 max-w-md mx-auto space-y-4 text-center">
+      <ShieldCheck className="h-8 w-8 mx-auto text-accent" />
+      <div>
+        <div className="font-display text-lg font-bold">Admin access</div>
+        <p className="text-xs text-muted-foreground mt-1">
+          Editing is locked. Enter the shared admin passcode to manage the tournament.
+        </p>
+      </div>
+      <Input
+        type="password"
+        autoComplete="current-password"
+        placeholder="Admin passcode"
+        value={passcode}
+        onChange={(e) => setPasscode(e.target.value)}
+      />
+      <button
+        type="submit"
+        disabled={busy}
+        className="w-full inline-flex items-center justify-center gap-2 h-10 px-4 rounded-md gold-gradient text-accent-foreground text-sm font-semibold hover:opacity-90 transition disabled:opacity-60"
+      >
+        <Lock className="h-4 w-4" /> {busy ? "Checking…" : "Unlock admin"}
+      </button>
+    </form>
   );
 }
 
