@@ -596,7 +596,7 @@ function AssistsTab({ data }: { data: ReturnType<typeof useTournament>["data"] &
                   </Select>
                 </td>
                 <td className="px-3 py-2 w-28">
-                  <Input type="number" min={0} value={a.assists} onChange={(e) => update(a.id, { assists: Number(e.target.value) })} />
+                  <StatInput value={a.assists} onCommit={(v) => update(a.id, { assists: v })} />
                 </td>
                 <td className="px-3 py-2 text-right"><IconButton onClick={() => remove(a.id)}><Trash2 className="h-4 w-4" /></IconButton></td>
               </tr>
