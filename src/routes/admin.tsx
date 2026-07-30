@@ -662,8 +662,8 @@ function GkTab({ data }: { data: ReturnType<typeof useTournament>["data"] & obje
                     {data.teams.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
                   </Select>
                 </td>
-                <td className="px-3 py-2 w-28"><Input type="number" min={0} value={k.clean_sheets} onChange={(e) => update(k.id, { clean_sheets: Number(e.target.value) })} /></td>
-                <td className="px-3 py-2 w-28"><Input type="number" min={0} value={k.saves} onChange={(e) => update(k.id, { saves: Number(e.target.value) })} /></td>
+                <td className="px-3 py-2 w-28"><StatInput value={k.clean_sheets} onCommit={(v) => update(k.id, { clean_sheets: v })} /></td>
+                <td className="px-3 py-2 w-28"><StatInput value={k.saves} onCommit={(v) => update(k.id, { saves: v })} /></td>
                 <td className="px-3 py-2 text-right"><IconButton onClick={() => remove(k.id)}><Trash2 className="h-4 w-4" /></IconButton></td>
               </tr>
             ))}
