@@ -2,6 +2,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { AppLayout, PageHeader } from "@/components/layout/AppLayout";
 import { useTournament } from "@/hooks/useTournament";
 import { MatchCard } from "@/components/match/MatchCard";
+import { Bulletin } from "@/components/bulletin/Bulletin";
+import { buildBulletin } from "@/lib/bulletin";
 import { topScorers, goldenBall } from "@/lib/tournament";
 
 export const Route = createFileRoute("/")({
