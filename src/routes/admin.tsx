@@ -3,7 +3,7 @@ import { AppLayout, PageHeader } from "@/components/layout/AppLayout";
 import { useTournament, useInvalidateTournament } from "@/hooks/useTournament";
 import { write } from "@/lib/admin-client";
 import { getAdminStatus, unlockAdmin, lockAdmin } from "@/lib/admin.functions";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { toast, Toaster } from "sonner";
 import { cn } from "@/lib/utils";
 import type { Match, MatchStage, MatchStatus, Team } from "@/lib/tournament";
@@ -412,7 +412,11 @@ function MatchAdminRow({
             </div>
             <div>
               <Label>MVP name</Label>
-              <Input value={match.mvp_player_name ?? ""} onChange={(e) => updateMatch({ mvp_player_name: e.target.value || null })} />
+              <DebouncedInput
+                placeholder="Player of the match"
+                value={match.mvp_player_name ?? ""}
+                onCommit={(v) => updateMatch({ mvp_player_name: v.trim() || null })}
+              />
             </div>
             <div>
               <Label>MVP team</Label>
@@ -592,7 +596,7 @@ function AssistsTab({ data }: { data: ReturnType<typeof useTournament>["data"] &
                   </Select>
                 </td>
                 <td className="px-3 py-2 w-28">
-                  <Input type="number" min={0} value={a.assists} onChange={(e) => update(a.id, { assists: Number(e.target.value) })} />
+                  <StatInput value={a.assists} onCommit={(v) => update(a.id, { assists: v })} />
                 </td>
                 <td className="px-3 py-2 text-right"><IconButton onClick={() => remove(a.id)}><Trash2 className="h-4 w-4" /></IconButton></td>
               </tr>
@@ -658,8 +662,8 @@ function GkTab({ data }: { data: ReturnType<typeof useTournament>["data"] & obje
                     {data.teams.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
                   </Select>
                 </td>
-                <td className="px-3 py-2 w-28"><Input type="number" min={0} value={k.clean_sheets} onChange={(e) => update(k.id, { clean_sheets: Number(e.target.value) })} /></td>
-                <td className="px-3 py-2 w-28"><Input type="number" min={0} value={k.saves} onChange={(e) => update(k.id, { saves: Number(e.target.value) })} /></td>
+                <td className="px-3 py-2 w-28"><StatInput value={k.clean_sheets} onCommit={(v) => update(k.id, { clean_sheets: v })} /></td>
+                <td className="px-3 py-2 w-28"><StatInput value={k.saves} onCommit={(v) => update(k.id, { saves: v })} /></td>
                 <td className="px-3 py-2 text-right"><IconButton onClick={() => remove(k.id)}><Trash2 className="h-4 w-4" /></IconButton></td>
               </tr>
             ))}
@@ -681,25 +685,149 @@ function Input(props: React.InputHTMLAttributes<HTMLInputElement>) {
 function Select(props: React.SelectHTMLAttributes<HTMLSelectElement>) {
   return <select {...props} className={cn("w-full h-10 rounded-md bg-surface-2 border border-border px-2 text-sm outline-none focus:border-accent transition", props.className)} />;
 }
-function NumberInput({ label, value, onChange }: { label: string; value: number; onChange: (v: number) => void }) {
+
+/* Debounced local editing: type freely, commit shortly after you stop. */
+function useDebouncedCommit<T>(value: T, commit: (v: T) => void, delay = 600) {
+  const [local, setLocal] = useState<T>(value);
+  const dirty = useRef(false);
+  const commitRef = useRef(commit);
+  commitRef.current = commit;
+
+  useEffect(() => {
+    if (!dirty.current) setLocal(value);
+  }, [value]);
+
+  useEffect(() => {
+    if (!dirty.current) return;
+    const t = setTimeout(() => {
+      dirty.current = false;
+      commitRef.current(local);
+    }, delay);
+    return () => clearTimeout(t);
+  }, [local, delay]);
+
+  return [
+    local,
+    (v: T) => {
+      dirty.current = true;
+      setLocal(v);
+    },
+    dirty,
+  ] as const;
+}
+
+function DebouncedInput({
+  value,
+  onCommit,
+  ...rest
+}: { value: string; onCommit: (v: string) => void } & Omit<
+  React.InputHTMLAttributes<HTMLInputElement>,
+  "value" | "onChange"
+>) {
+  const [local, set, dirty] = useDebouncedCommit(value, onCommit);
   return (
-    <div>
-      <Label>{label}</Label>
-      <Input type="number" min={0} value={value} onChange={(e) => onChange(Number(e.target.value))} />
+    <div className="relative">
+      <Input
+        {...rest}
+        value={local}
+        onChange={(e) => set(e.target.value)}
+        onBlur={() => {
+          if (dirty.current) {
+            dirty.current = false;
+            onCommit(local);
+          }
+        }}
+      />
+      {dirty.current && (
+        <span className="absolute right-2 top-1/2 -translate-y-1/2 h-1.5 w-1.5 rounded-full bg-accent animate-pulse" />
+      )}
     </div>
   );
 }
+
+function NumberInput({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: number;
+  onChange: (v: number) => void;
+}) {
+  const [local, set, dirty] = useDebouncedCommit(value, onChange, 450);
+  const bump = (d: number) => set(Math.max(0, local + d));
+  return (
+    <div>
+      <Label>{label}</Label>
+      <div className="flex items-stretch rounded-md border border-border bg-surface-2 overflow-hidden focus-within:border-accent transition">
+        <button
+          type="button"
+          onClick={() => bump(-1)}
+          className="w-9 text-muted-foreground hover:text-accent hover:bg-surface transition active:scale-90"
+          aria-label={`Decrease ${label}`}
+        >
+          −
+        </button>
+        <input
+          type="number"
+          min={0}
+          value={local}
+          onChange={(e) => set(Number(e.target.value))}
+          onBlur={() => {
+            if (dirty.current) {
+              dirty.current = false;
+              onChange(local);
+            }
+          }}
+          className="flex-1 w-full h-10 bg-transparent text-center text-sm font-bold tabular-nums outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none"
+        />
+        <button
+          type="button"
+          onClick={() => bump(1)}
+          className="w-9 text-muted-foreground hover:text-accent hover:bg-surface transition active:scale-90"
+          aria-label={`Increase ${label}`}
+        >
+          +
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function StatInput({ value, onCommit }: { value: number; onCommit: (v: number) => void }) {
+  const [local, set, dirty] = useDebouncedCommit(value, onCommit, 450);
+  return (
+    <input
+      type="number"
+      min={0}
+      value={local}
+      onChange={(e) => set(Number(e.target.value))}
+      onBlur={() => {
+        if (dirty.current) {
+          dirty.current = false;
+          onCommit(local);
+        }
+      }}
+      className="w-full h-9 rounded-md bg-surface-2 border border-border px-2 text-sm text-center font-semibold tabular-nums outline-none focus:border-accent transition [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none"
+    />
+  );
+}
+
 function PrimaryButton({ children, onClick, icon }: { children: React.ReactNode; onClick: () => void; icon?: React.ReactNode }) {
   return (
-    <button onClick={onClick} className="inline-flex items-center justify-center gap-2 h-10 px-4 rounded-md gold-gradient text-accent-foreground text-sm font-semibold hover:opacity-90 transition">
+    <button
+      onClick={onClick}
+      className="inline-flex items-center justify-center gap-2 h-10 px-4 rounded-md gold-gradient text-accent-foreground text-sm font-semibold transition-transform duration-200 hover:opacity-90 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98]"
+    >
       {icon}{children}
     </button>
   );
 }
 function IconButton({ children, onClick }: { children: React.ReactNode; onClick: () => void }) {
   return (
-    <button onClick={onClick} className="inline-flex items-center h-8 px-2 rounded-md text-muted-foreground hover:text-destructive hover:bg-surface-2 transition text-xs">
+    <button onClick={onClick} className="inline-flex items-center h-8 px-2 rounded-md text-muted-foreground hover:text-destructive hover:bg-surface-2 transition text-xs active:scale-90">
       {children}
     </button>
   );
 }
+

@@ -2,6 +2,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { AppLayout, PageHeader } from "@/components/layout/AppLayout";
 import { useTournament } from "@/hooks/useTournament";
 import { MatchCard } from "@/components/match/MatchCard";
+import { Bulletin } from "@/components/bulletin/Bulletin";
+import { buildBulletin } from "@/lib/bulletin";
 import { topScorers, goldenBall } from "@/lib/tournament";
 
 export const Route = createFileRoute("/")({
@@ -42,6 +44,8 @@ function HomePage() {
   const upcoming = data.matches.filter((m) => m.status === "scheduled").slice(0, 4);
   const scorers = topScorers(data.goals, data.teams).slice(0, 5);
   const balls = goldenBall(data).slice(0, 5);
+  const bulletin = buildBulletin(data);
+
 
   return (
     <AppLayout>
@@ -53,6 +57,10 @@ function HomePage() {
             : "Direct Knockout · Round of 32"
         }
       />
+
+      <Bulletin items={bulletin} />
+
+
 
       {live.length > 0 && (
         <section className="mb-8">
