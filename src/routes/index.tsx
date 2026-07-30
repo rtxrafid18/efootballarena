@@ -44,6 +44,8 @@ function HomePage() {
   const upcoming = data.matches.filter((m) => m.status === "scheduled").slice(0, 4);
   const scorers = topScorers(data.goals, data.teams).slice(0, 5);
   const balls = goldenBall(data).slice(0, 5);
+  const bulletin = buildBulletin(data);
+
 
   return (
     <AppLayout>
