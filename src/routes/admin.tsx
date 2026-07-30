@@ -3,7 +3,7 @@ import { AppLayout, PageHeader } from "@/components/layout/AppLayout";
 import { useTournament, useInvalidateTournament } from "@/hooks/useTournament";
 import { write } from "@/lib/admin-client";
 import { getAdminStatus, unlockAdmin, lockAdmin } from "@/lib/admin.functions";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { toast, Toaster } from "sonner";
 import { cn } from "@/lib/utils";
 import type { Match, MatchStage, MatchStatus, Team } from "@/lib/tournament";
