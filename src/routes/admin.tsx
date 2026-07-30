@@ -412,7 +412,11 @@ function MatchAdminRow({
             </div>
             <div>
               <Label>MVP name</Label>
-              <Input value={match.mvp_player_name ?? ""} onChange={(e) => updateMatch({ mvp_player_name: e.target.value || null })} />
+              <DebouncedInput
+                placeholder="Player of the match"
+                value={match.mvp_player_name ?? ""}
+                onCommit={(v) => updateMatch({ mvp_player_name: v.trim() || null })}
+              />
             </div>
             <div>
               <Label>MVP team</Label>
