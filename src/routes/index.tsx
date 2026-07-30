@@ -58,6 +58,10 @@ function HomePage() {
         }
       />
 
+      <Bulletin items={bulletin} />
+
+
+
       {live.length > 0 && (
         <section className="mb-8">
           <SectionTitle title="Live now" tone="live" />
