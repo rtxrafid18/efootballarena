@@ -603,6 +603,134 @@ a, button, .card-elevated, .lift, [role="button"] {
 }
 
 
+/* ---------- Knockout bracket ---------- */
+.pitch-frame {
+  position: relative;
+  border-radius: 20px;
+  border: 1px solid color-mix(in oklab, var(--gold) 16%, var(--border));
+  background-image:
+    repeating-linear-gradient(
+      90deg,
+      color-mix(in oklab, var(--foreground) 2.6%, transparent) 0 64px,
+      transparent 64px 128px
+    ),
+    radial-gradient(120% 90% at 50% -20%, color-mix(in oklab, var(--gold) 9%, transparent), transparent 60%);
+  background-color: color-mix(in oklab, var(--foreground) 2%, var(--background));
+  box-shadow: inset 0 1px 0 color-mix(in oklab, var(--foreground) 6%, transparent);
+}
+
+.bracket-grid {
+  display: flex;
+  align-items: stretch;
+  gap: 56px;
+}
+
+.bk-col {
+  display: flex;
+  flex-direction: column;
+  min-width: 310px;
+  flex: 0 0 310px;
+  animation: bracket-grow 0.6s var(--ease-spring) both;
+  animation-delay: calc(var(--col, 0) * 90ms);
+}
+
+.bk-heading {
+  font-family: var(--font-display, inherit);
+  text-align: center;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: color-mix(in oklab, var(--gold) 85%, var(--foreground));
+  padding-bottom: 10px;
+  margin-bottom: 14px;
+  border-bottom: 1px solid color-mix(in oklab, var(--gold) 22%, transparent);
+}
+
+.bk-body {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  flex: 1;
+  gap: 18px;
+}
+
+.bk-pair {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  flex: 1;
+  gap: 18px;
+}
+
+.bk-node {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+/* horizontal stub out of every match in a linked column */
+.bk-body--linked .bk-node::after {
+  content: "";
+  position: absolute;
+  right: -28px;
+  top: 50%;
+  width: 28px;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    color-mix(in oklab, var(--gold) 42%, transparent),
+    color-mix(in oklab, var(--gold) 16%, transparent)
+  );
+}
+
+/* vertical join between the two matches of a pair */
+.bk-body--linked .bk-pair--joined::before {
+  content: "";
+  position: absolute;
+  right: -28px;
+  top: 25%;
+  height: 50%;
+  width: 2px;
+  background: color-mix(in oklab, var(--gold) 28%, transparent);
+}
+
+/* feed line into the next round */
+.bk-body--linked .bk-pair::after {
+  content: "";
+  position: absolute;
+  right: -56px;
+  top: 50%;
+  width: 28px;
+  height: 2px;
+  background: color-mix(in oklab, var(--gold) 28%, transparent);
+}
+
+.champion-banner {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 18px;
+  border-radius: 18px;
+  border: 1px solid color-mix(in oklab, var(--gold) 34%, var(--border));
+  background-image: linear-gradient(
+    100deg,
+    color-mix(in oklab, var(--gold) 14%, transparent),
+    transparent 65%
+  );
+  box-shadow: 0 20px 40px -30px color-mix(in oklab, var(--gold) 80%, transparent);
+}
+
+@media (max-width: 640px) {
+  .bk-col { min-width: 240px; flex-basis: 240px; }
+  .bracket-grid { gap: 44px; }
+  .bk-body--linked .bk-node::after,
+  .bk-body--linked .bk-pair::after { width: 22px; right: -22px; }
+  .bk-body--linked .bk-pair--joined::before { right: -22px; }
+  .bk-body--linked .bk-pair::after { right: -44px; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
@@ -610,3 +738,4 @@ a, button, .card-elevated, .lift, [role="button"] {
     transition-duration: 0.01ms !important;
   }
 }
+
