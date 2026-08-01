@@ -301,6 +301,11 @@ function MatchesTab({ data }: { data: ReturnType<typeof useTournament>["data"] &
   const [homeId, setHomeId] = useState("");
   const [awayId, setAwayId] = useState("");
   const [expanded, setExpanded] = useState<string | null>(null);
+  const [stageFilter, setStageFilter] = useState<MatchStage | "all">("all");
+  const visibleMatches = data.matches.filter(
+    (m) => stageFilter === "all" || m.stage === stageFilter,
+  );
+
 
   async function createMatch() {
     if (!homeId || !awayId || homeId === awayId) return toast.error("Pick two different teams");
