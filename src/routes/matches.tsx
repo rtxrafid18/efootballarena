@@ -42,7 +42,10 @@ function MatchesPage() {
       </AppLayout>
     );
 
-  const matches = data.matches.filter((m) => filter === "all" || m.status === filter);
+  const matches = data.matches.filter(
+    (m) => (filter === "all" || m.status === filter) && (stageFilter === "all" || m.stage === stageFilter),
+  );
+
 
   // group by stage
   const byStage = new Map<MatchStage, typeof matches>();
