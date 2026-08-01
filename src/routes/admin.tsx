@@ -344,11 +344,32 @@ function MatchesTab({ data }: { data: ReturnType<typeof useTournament>["data"] &
         </div>
       </div>
 
+      <div className="flex gap-2 overflow-x-auto pb-1">
+        {(["all","group","r32","r16","qf","sf","3rd","final"] as const).map((s) => {
+          const count = s === "all" ? data.matches.length : data.matches.filter((m) => m.stage === s).length;
+          return (
+            <button
+              key={s}
+              onClick={() => setStageFilter(s)}
+              className={
+                "shrink-0 px-3.5 py-2 rounded-full font-display text-[10px] font-bold uppercase tracking-[0.14em] border transition-all duration-300 ease-out " +
+                (stageFilter === s
+                  ? "gold-gradient text-accent-foreground border-transparent -translate-y-px"
+                  : "border-border text-muted-foreground hover:text-foreground hover:border-accent/40")
+              }
+            >
+              {s === "all" ? "All stages" : stageLabel[s]}
+              <span className="ml-1.5 opacity-70 tabular-nums">{count}</span>
+            </button>
+          );
+        })}
+      </div>
+
       <div className="space-y-3">
-        {data.matches.length === 0 && (
-          <div className="card-elevated p-8 text-center text-muted-foreground text-sm">No matches yet</div>
+        {visibleMatches.length === 0 && (
+          <div className="card-elevated p-8 text-center text-muted-foreground text-sm">No matches in this stage</div>
         )}
-        {data.matches.map((m) => (
+        {visibleMatches.map((m) => (
           <MatchAdminRow
             key={m.id}
             match={m}
@@ -360,6 +381,7 @@ function MatchesTab({ data }: { data: ReturnType<typeof useTournament>["data"] &
           />
         ))}
       </div>
+
     </div>
   );
 }
