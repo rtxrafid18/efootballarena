@@ -28,6 +28,8 @@ const FILTERS: { key: "all" | "live" | "finished" | "scheduled"; label: string }
 function MatchesPage() {
   const { data } = useTournament();
   const [filter, setFilter] = useState<(typeof FILTERS)[number]["key"]>("all");
+  const [stageFilter, setStageFilter] = useState<MatchStage | "all">("all");
+
 
   if (!data) return (
       <AppLayout>
