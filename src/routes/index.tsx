@@ -45,6 +45,8 @@ function HomePage() {
   const scorers = topScorers(data.goals, data.teams).slice(0, 5);
   const balls = goldenBall(data).slice(0, 5);
   const bulletin = buildBulletin(data);
+  const thirdPlace = data.matches.find((m) => m.stage === "3rd") ?? null;
+
 
 
   return (
