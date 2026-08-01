@@ -25,9 +25,23 @@ const FILTERS: { key: "all" | "live" | "finished" | "scheduled"; label: string }
   { key: "scheduled", label: "Upcoming" },
 ];
 
+const STAGE_FILTERS: (MatchStage | "all")[] = [
+  "all",
+  "group",
+  "r32",
+  "r16",
+  "qf",
+  "sf",
+  "3rd",
+  "final",
+];
+
+
 function MatchesPage() {
   const { data } = useTournament();
   const [filter, setFilter] = useState<(typeof FILTERS)[number]["key"]>("all");
+  const [stageFilter, setStageFilter] = useState<MatchStage | "all">("all");
+
 
   if (!data) return (
       <AppLayout>
@@ -42,7 +56,10 @@ function MatchesPage() {
       </AppLayout>
     );
 
-  const matches = data.matches.filter((m) => filter === "all" || m.status === filter);
+  const matches = data.matches.filter(
+    (m) => (filter === "all" || m.status === filter) && (stageFilter === "all" || m.stage === stageFilter),
+  );
+
 
   // group by stage
   const byStage = new Map<MatchStage, typeof matches>();
@@ -56,13 +73,13 @@ function MatchesPage() {
     <AppLayout>
       <PageHeader title="Match Center" subtitle="Live, finished and upcoming fixtures" />
 
-      <div className="flex gap-2 mb-6 overflow-x-auto">
+      <div className="flex gap-2 mb-3 overflow-x-auto">
         {FILTERS.map((f) => (
           <button
             key={f.key}
             onClick={() => setFilter(f.key)}
             className={cn(
-              "px-4 py-2 rounded-full font-display text-[11px] font-bold uppercase tracking-[0.14em] border transition-all duration-300 ease-out",
+              "shrink-0 px-4 py-2 rounded-full font-display text-[11px] font-bold uppercase tracking-[0.14em] border transition-all duration-300 ease-out",
               filter === f.key
                 ? "gold-gradient text-accent-foreground border-transparent shadow-[0_10px_24px_-14px_var(--gold)] -translate-y-px"
                 : "border-border text-muted-foreground hover:text-foreground hover:border-accent/40",
@@ -72,6 +89,32 @@ function MatchesPage() {
           </button>
         ))}
       </div>
+
+      <div className="flex gap-2 mb-6 overflow-x-auto">
+        {STAGE_FILTERS.map((s) => {
+          const count =
+            s === "all"
+              ? data.matches.length
+              : data.matches.filter((m) => m.stage === s).length;
+          if (s !== "all" && count === 0) return null;
+          return (
+            <button
+              key={s}
+              onClick={() => setStageFilter(s)}
+              className={cn(
+                "shrink-0 px-3.5 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-[0.14em] border transition-all duration-300 ease-out",
+                stageFilter === s
+                  ? "border-accent/60 bg-accent/12 text-accent -translate-y-px"
+                  : "border-border/70 text-muted-foreground hover:text-foreground hover:border-accent/40",
+              )}
+            >
+              {s === "all" ? "All stages" : stageLabel[s]}
+              <span className="ml-1.5 opacity-70 tabular-nums">{count}</span>
+            </button>
+          );
+        })}
+      </div>
+
 
       {matches.length === 0 ? (
         <div className="card-elevated p-8 text-center text-muted-foreground text-sm">
