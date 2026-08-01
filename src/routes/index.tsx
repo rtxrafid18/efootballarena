@@ -45,6 +45,8 @@ function HomePage() {
   const scorers = topScorers(data.goals, data.teams).slice(0, 5);
   const balls = goldenBall(data).slice(0, 5);
   const bulletin = buildBulletin(data);
+  const thirdPlace = data.matches.find((m) => m.stage === "3rd") ?? null;
+
 
 
   return (
@@ -57,10 +59,6 @@ function HomePage() {
             : "Direct Knockout · Round of 32"
         }
       />
-
-      <Bulletin items={bulletin} />
-
-
 
       {live.length > 0 && (
         <section className="mb-8">
@@ -87,7 +85,7 @@ function HomePage() {
           )}
           {upcoming.length > 0 && (
             <div>
-              <SectionTitle title="Upcoming" />
+              <SectionTitle title="Upcoming" link={{ to: "/matches", label: "Schedule" }} />
               <div className="grid gap-3.5 md:grid-cols-2 stagger-flip">
                 {upcoming.map((m) => (
                   <MatchCard key={m.id} match={m} teams={data.teams} goals={data.goals} compact />
@@ -95,6 +93,18 @@ function HomePage() {
               </div>
             </div>
           )}
+          {thirdPlace && (
+            <div>
+              <SectionTitle title="3rd place play-off" />
+              <div className="grid gap-3.5 md:grid-cols-2 stagger-flip">
+                <MatchCard match={thirdPlace} teams={data.teams} goals={data.goals} />
+              </div>
+            </div>
+          )}
+          <div className="reveal">
+            <SectionTitle title="Tournament bulletin" />
+            <Bulletin items={bulletin} />
+          </div>
           {data.matches.length === 0 && (
             <EmptyState
               title="No matches yet"
@@ -103,6 +113,7 @@ function HomePage() {
             />
           )}
         </section>
+
 
         <aside className="space-y-5 lg:sticky lg:top-24">
           <LeaderCard

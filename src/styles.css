@@ -577,6 +577,31 @@
   & > * { position: relative; z-index: 1; }
 }
 
+/* Smoother global motion + pitch texture */
+html { scroll-behavior: smooth; }
+body { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+
+a, button, .card-elevated, .lift, [role="button"] {
+  transition-property: transform, box-shadow, border-color, background-color, color, opacity;
+  transition-duration: 260ms;
+  transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
+}
+
+.card-elevated::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  background-image: repeating-linear-gradient(
+    90deg,
+    color-mix(in oklab, var(--foreground) 2.2%, transparent) 0 26px,
+    transparent 26px 52px
+  );
+  opacity: 0.35;
+}
+
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
