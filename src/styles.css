@@ -628,8 +628,8 @@ a, button, .card-elevated, .lift, [role="button"] {
 .bk-col {
   display: flex;
   flex-direction: column;
-  min-width: 270px;
-  flex: 0 0 270px;
+  min-width: 310px;
+  flex: 0 0 310px;
   animation: bracket-grow 0.6s var(--ease-spring) both;
   animation-delay: calc(var(--col, 0) * 90ms);
 }
