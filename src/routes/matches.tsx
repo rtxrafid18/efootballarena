@@ -25,6 +25,18 @@ const FILTERS: { key: "all" | "live" | "finished" | "scheduled"; label: string }
   { key: "scheduled", label: "Upcoming" },
 ];
 
+const STAGE_FILTERS: (MatchStage | "all")[] = [
+  "all",
+  "group",
+  "r32",
+  "r16",
+  "qf",
+  "sf",
+  "3rd",
+  "final",
+];
+
+
 function MatchesPage() {
   const { data } = useTournament();
   const [filter, setFilter] = useState<(typeof FILTERS)[number]["key"]>("all");
