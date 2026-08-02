@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useEffect, useRef, useState } from "react";
 import { AppLayout, PageHeader } from "@/components/layout/AppLayout";
 import { useTournament } from "@/hooks/useTournament";
 import { MatchCard } from "@/components/match/MatchCard";
@@ -22,8 +23,37 @@ export const Route = createFileRoute("/knockout")({
 
 const BRACKET_STAGES: MatchStage[] = ["r32", "r16", "qf", "sf", "final"];
 
+/** Tracks which matches just produced (or changed) a winner, for advancement FX. */
+function useAdvancementFx(matches: Match[] | undefined, teams: Team[] | undefined) {
+  const prev = useRef<Map<string, string | null> | null>(null);
+  const [advancing, setAdvancing] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    if (!matches || !teams) return;
+    const current = new Map<string, string | null>();
+    for (const m of matches) current.set(m.id, winnerOf(m, teams)?.id ?? null);
+
+    const before = prev.current;
+    prev.current = current;
+    if (!before) return; // first paint: no flash
+
+    const changed = new Set<string>();
+    for (const [id, w] of current) {
+      if (w && before.get(id) !== w) changed.add(id);
+    }
+    if (changed.size === 0) return;
+
+    setAdvancing(changed);
+    const t = setTimeout(() => setAdvancing(new Set()), 3200);
+    return () => clearTimeout(t);
+  }, [matches, teams]);
+
+  return advancing;
+}
+
 function KnockoutPage() {
   const { data } = useTournament();
+  const advancing = useAdvancementFx(data?.matches, data?.teams);
 
   if (!data)
     return (
@@ -49,6 +79,7 @@ function KnockoutPage() {
   const thirdPlace = data.matches.find((m) => m.stage === "3rd") ?? null;
   const finalMatch = data.matches.find((m) => m.stage === "final") ?? null;
   const champion = winnerOf(finalMatch, data.teams);
+
 
   if (stages.length === 0 && !thirdPlace) {
     return (
