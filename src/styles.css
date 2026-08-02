@@ -620,16 +620,20 @@ a, button, .card-elevated, .lift, [role="button"] {
 }
 
 .bracket-grid {
+  --bk-gap: 56px;
+  --bk-col-w: 310px;
   display: flex;
   align-items: stretch;
-  gap: 56px;
+  gap: var(--bk-gap);
+  scroll-snap-type: x proximity;
 }
 
 .bk-col {
   display: flex;
   flex-direction: column;
-  min-width: 310px;
-  flex: 0 0 310px;
+  min-width: var(--bk-col-w);
+  flex: 0 0 var(--bk-col-w);
+  scroll-snap-align: start;
   animation: bracket-grow 0.6s var(--ease-spring) both;
   animation-delay: calc(var(--col, 0) * 90ms);
 }
@@ -668,15 +672,17 @@ a, button, .card-elevated, .lift, [role="button"] {
   position: relative;
   display: flex;
   align-items: center;
+  border-radius: 14px;
+  transition: transform 0.5s var(--ease-spring), box-shadow 0.5s ease;
 }
 
 /* horizontal stub out of every match in a linked column */
 .bk-body--linked .bk-node::after {
   content: "";
   position: absolute;
-  right: -28px;
+  right: calc(var(--bk-gap) / -2);
   top: 50%;
-  width: 28px;
+  width: calc(var(--bk-gap) / 2);
   height: 2px;
   background: linear-gradient(
     90deg,
@@ -689,7 +695,7 @@ a, button, .card-elevated, .lift, [role="button"] {
 .bk-body--linked .bk-pair--joined::before {
   content: "";
   position: absolute;
-  right: -28px;
+  right: calc(var(--bk-gap) / -2);
   top: 25%;
   height: 50%;
   width: 2px;
@@ -700,36 +706,75 @@ a, button, .card-elevated, .lift, [role="button"] {
 .bk-body--linked .bk-pair::after {
   content: "";
   position: absolute;
-  right: -56px;
+  right: calc(var(--bk-gap) * -1);
   top: 50%;
-  width: 28px;
+  width: calc(var(--bk-gap) / 2);
   height: 2px;
   background: color-mix(in oklab, var(--gold) 28%, transparent);
 }
 
-.champion-banner {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 16px 18px;
-  border-radius: 18px;
-  border: 1px solid color-mix(in oklab, var(--gold) 34%, var(--border));
-  background-image: linear-gradient(
-    100deg,
-    color-mix(in oklab, var(--gold) 14%, transparent),
-    transparent 65%
+/* ---------- Advancement animations ---------- */
+@keyframes bk-advance {
+  0% { transform: scale(1); box-shadow: 0 0 0 0 color-mix(in oklab, var(--gold) 55%, transparent); }
+  35% { transform: scale(1.035); box-shadow: 0 0 0 6px color-mix(in oklab, var(--gold) 22%, transparent); }
+  100% { transform: scale(1); box-shadow: 0 0 0 14px transparent; }
+}
+
+@keyframes bk-flow {
+  0% { transform: translateX(-100%); opacity: 0; }
+  25% { opacity: 1; }
+  100% { transform: translateX(100%); opacity: 0; }
+}
+
+@keyframes bk-arrive {
+  0% { opacity: 0; transform: translateY(6px) scale(0.98); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.bk-node--advancing {
+  animation: bk-advance 1.5s var(--ease-spring) 2;
+  z-index: 2;
+}
+
+.bk-node--advancing::before {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border-radius: 16px;
+  pointer-events: none;
+  overflow: hidden;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in oklab, var(--gold) 30%, transparent),
+    transparent
   );
-  box-shadow: 0 20px 40px -30px color-mix(in oklab, var(--gold) 80%, transparent);
+  animation: bk-flow 1.4s ease-in-out 2;
+}
+
+.bk-node--arriving {
+  animation: bk-arrive 0.7s var(--ease-spring) both;
+}
+
+.bk-body--linked .bk-node--advancing::after {
+  background: color-mix(in oklab, var(--gold) 85%, transparent);
+  box-shadow: 0 0 10px color-mix(in oklab, var(--gold) 60%, transparent);
+}
+
+@media (max-width: 900px) {
+  .bracket-grid { --bk-gap: 44px; --bk-col-w: 268px; }
 }
 
 @media (max-width: 640px) {
-  .bk-col { min-width: 240px; flex-basis: 240px; }
-  .bracket-grid { gap: 44px; }
-  .bk-body--linked .bk-node::after,
-  .bk-body--linked .bk-pair::after { width: 22px; right: -22px; }
-  .bk-body--linked .bk-pair--joined::before { right: -22px; }
-  .bk-body--linked .bk-pair::after { right: -44px; }
+  .bracket-grid { --bk-gap: 32px; --bk-col-w: 244px; }
+  .bk-heading { font-size: 9px; letter-spacing: 0.16em; }
+  .bk-body, .bk-pair { gap: 14px; }
 }
+
+@media (max-width: 380px) {
+  .bracket-grid { --bk-gap: 26px; --bk-col-w: 216px; }
+}
+
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
