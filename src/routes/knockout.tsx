@@ -136,24 +136,41 @@ function KnockoutPage() {
           {stages.map(({ stage, list }, colIndex) => {
             const pairs = chunkPairs(list);
             const isLastCol = colIndex === stages.length - 1;
+            const feeders = colIndex > 0 ? stages[colIndex - 1].list : [];
             return (
               <div key={stage} className="bk-col" style={{ ["--col" as string]: colIndex }}>
                 <h2 className="bk-heading">{stageLabel[stage]}</h2>
                 <div className={cn("bk-body", !isLastCol && "bk-body--linked")}>
                   {pairs.map((pair, pi) => (
                     <div key={pi} className={cn("bk-pair", pair.length === 2 && "bk-pair--joined")}>
-                      {pair.map((m) => (
-                        <div key={m.id} className="bk-node">
-                          <MatchCard
-                            match={m}
-                            teams={data.teams}
-                            goals={data.goals}
-                            compact
-                          />
-                        </div>
-                      ))}
+                      {pair.map((m, ni) => {
+                        const idx = pi * 2 + ni;
+                        const arriving =
+                          feeders.length > 0 &&
+                          [feeders[idx * 2], feeders[idx * 2 + 1]].some(
+                            (f) => f && advancing.has(f.id),
+                          );
+                        return (
+                          <div
+                            key={m.id}
+                            className={cn(
+                              "bk-node",
+                              advancing.has(m.id) && "bk-node--advancing",
+                              arriving && !advancing.has(m.id) && "bk-node--arriving",
+                            )}
+                          >
+                            <MatchCard
+                              match={m}
+                              teams={data.teams}
+                              goals={data.goals}
+                              compact
+                            />
+                          </div>
+                        );
+                      })}
                     </div>
                   ))}
+
                 </div>
               </div>
             );
