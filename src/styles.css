@@ -761,6 +761,21 @@ a, button, .card-elevated, .lift, [role="button"] {
   box-shadow: 0 0 10px color-mix(in oklab, var(--gold) 60%, transparent);
 }
 
+.champion-banner {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 18px;
+  border-radius: 18px;
+  border: 1px solid color-mix(in oklab, var(--gold) 34%, var(--border));
+  background-image: linear-gradient(
+    100deg,
+    color-mix(in oklab, var(--gold) 14%, transparent),
+    transparent 65%
+  );
+  box-shadow: 0 20px 40px -30px color-mix(in oklab, var(--gold) 80%, transparent);
+}
+
 @media (max-width: 900px) {
   .bracket-grid { --bk-gap: 44px; --bk-col-w: 268px; }
 }
