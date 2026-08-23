@@ -2,13 +2,13 @@ import { createFileRoute } from "@tanstack/react-router";
 import { AppLayout, PageHeader } from "@/components/layout/AppLayout";
 import { useTournament, useInvalidateTournament } from "@/hooks/useTournament";
 import { write } from "@/lib/admin-client";
-import { getAdminStatus, unlockAdmin, lockAdmin } from "@/lib/admin.functions";
+import { getAdminStatus, unlockAdmin, lockAdmin, resetTournament } from "@/lib/admin.functions";
 import { useState, useEffect, useRef } from "react";
 import { toast, Toaster } from "sonner";
 import { cn } from "@/lib/utils";
 import type { Match, MatchStage, MatchStatus, Team } from "@/lib/tournament";
 import { stageLabel } from "@/lib/tournament";
-import { Plus, Trash2, Save, Lock, ShieldCheck } from "lucide-react";
+import { Plus, Trash2, Save, Lock, ShieldCheck, AlertTriangle, RotateCcw } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 
 export const Route = createFileRoute("/admin")({
