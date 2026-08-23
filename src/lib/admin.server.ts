@@ -65,3 +65,16 @@ export function validateWriteInput(input: unknown): AdminWriteInput {
     id: raw.id,
   };
 }
+
+/* ---------------- Tournament reset ---------------- */
+
+export const RESET_SCOPES = ["results", "fixtures", "everything"] as const;
+export type ResetScope = (typeof RESET_SCOPES)[number];
+
+export function validateResetInput(input: unknown): { scope: ResetScope } {
+  const raw = input as { scope?: string } | null;
+  if (!raw || !RESET_SCOPES.includes(raw.scope as ResetScope)) {
+    throw new Error("Unknown reset scope");
+  }
+  return { scope: raw.scope as ResetScope };
+}

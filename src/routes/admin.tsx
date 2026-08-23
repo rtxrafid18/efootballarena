@@ -2,13 +2,13 @@ import { createFileRoute } from "@tanstack/react-router";
 import { AppLayout, PageHeader } from "@/components/layout/AppLayout";
 import { useTournament, useInvalidateTournament } from "@/hooks/useTournament";
 import { write } from "@/lib/admin-client";
-import { getAdminStatus, unlockAdmin, lockAdmin } from "@/lib/admin.functions";
+import { getAdminStatus, unlockAdmin, lockAdmin, resetTournament } from "@/lib/admin.functions";
 import { useState, useEffect, useRef } from "react";
 import { toast, Toaster } from "sonner";
 import { cn } from "@/lib/utils";
 import type { Match, MatchStage, MatchStatus, Team } from "@/lib/tournament";
 import { stageLabel } from "@/lib/tournament";
-import { Plus, Trash2, Save, Lock, ShieldCheck } from "lucide-react";
+import { Plus, Trash2, Save, Lock, ShieldCheck, AlertTriangle, RotateCcw } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 
 export const Route = createFileRoute("/admin")({
@@ -202,9 +202,100 @@ function SettingsTab({ data }: { data: ReturnType<typeof useTournament>["data"] 
         </div>
       </div>
       <PrimaryButton onClick={save} icon={<Save className="h-4 w-4" />}>Save settings</PrimaryButton>
+
+      <ResetPanel />
     </div>
   );
 }
+
+/* ---------------- Tournament reset ---------------- */
+
+const RESET_OPTIONS = [
+  {
+    scope: "results" as const,
+    title: "Reset results only",
+    sub: "Clears scores, goals, MVPs, assists & GK stats. Fixtures and teams stay.",
+    confirm: "RESET RESULTS",
+  },
+  {
+    scope: "fixtures" as const,
+    title: "Clear fixtures & results",
+    sub: "Deletes every match plus all stats. Teams and groups are kept.",
+    confirm: "CLEAR FIXTURES",
+  },
+  {
+    scope: "everything" as const,
+    title: "Brand new tournament",
+    sub: "Deletes teams, matches and every stat. Groups remain empty and ready.",
+    confirm: "NEW TOURNAMENT",
+  },
+];
+
+function ResetPanel() {
+  const refresh = useInvalidateTournament();
+  const [scope, setScope] = useState<(typeof RESET_OPTIONS)[number]["scope"]>("results");
+  const [phrase, setPhrase] = useState("");
+  const [busy, setBusy] = useState(false);
+  const active = RESET_OPTIONS.find((o) => o.scope === scope)!;
+
+  async function run() {
+    if (phrase.trim().toUpperCase() !== active.confirm) {
+      return toast.error(`Type “${active.confirm}” to confirm`);
+    }
+    setBusy(true);
+    try {
+      await resetTournament({ data: { scope } });
+      setPhrase("");
+      toast.success("Tournament reset — you're ready for a new one");
+      refresh();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Reset failed");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="mt-8 rounded-xl border border-destructive/40 bg-[color-mix(in_oklab,var(--destructive)_7%,transparent)] p-5 space-y-4">
+      <div className="flex items-center gap-2">
+        <AlertTriangle className="h-4 w-4 text-destructive" />
+        <h3 className="font-display text-sm font-extrabold uppercase tracking-[0.14em] text-destructive">
+          Danger zone · Tournament reset
+        </h3>
+      </div>
+      <div className="grid gap-2">
+        {RESET_OPTIONS.map((o) => (
+          <button
+            key={o.scope}
+            onClick={() => { setScope(o.scope); setPhrase(""); }}
+            className={cn(
+              "text-left p-3 rounded-lg border transition",
+              scope === o.scope
+                ? "border-destructive bg-[color-mix(in_oklab,var(--destructive)_12%,transparent)]"
+                : "border-border hover:border-destructive/50",
+            )}
+          >
+            <div className="text-sm font-bold">{o.title}</div>
+            <div className="text-xs text-muted-foreground">{o.sub}</div>
+          </button>
+        ))}
+      </div>
+      <div>
+        <Label>Type “{active.confirm}” to confirm</Label>
+        <Input value={phrase} onChange={(e) => setPhrase(e.target.value)} placeholder={active.confirm} />
+      </div>
+      <button
+        onClick={run}
+        disabled={busy}
+        className="inline-flex items-center gap-2 h-10 px-4 rounded-md bg-destructive text-destructive-foreground text-sm font-semibold hover:opacity-90 transition disabled:opacity-60"
+      >
+        <RotateCcw className="h-4 w-4" /> {busy ? "Resetting…" : active.title}
+      </button>
+    </div>
+  );
+}
+
+
 
 /* ---------------- Teams ---------------- */
 
