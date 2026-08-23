@@ -63,8 +63,6 @@ export const resetTournament = createServerFn({ method: "POST" })
     const all = (table: string) =>
       supabaseAdmin.from(table as never).delete().not("id", "is", null);
 
-    // Always clears live match data
-    const steps: Promise<{ error: { message: string } | null }>[] = [];
     const run = async (p: PromiseLike<{ error: { message: string } | null }>) => {
       const r = await p;
       if (r.error) throw new Error(r.error.message);
@@ -99,6 +97,5 @@ export const resetTournament = createServerFn({ method: "POST" })
       await run(all("teams"));
     }
 
-    void steps;
     return { ok: true as const, scope: data.scope };
   });
