@@ -48,6 +48,8 @@ function HomePage() {
   const balls = goldenBall(data).slice(0, 5);
   const bulletin = buildBulletin(data);
   const thirdPlace = data.matches.find((m) => m.stage === "3rd") ?? null;
+  const teamsInPlay = participatingTeams(data);
+
 
 
 
