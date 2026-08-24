@@ -189,3 +189,45 @@ export function groupStandings(groupId: string, data: TournamentData): Standing[
     (a, b) => b.points - a.points || b.gd - a.gd || b.gf - a.gf || a.team.name.localeCompare(b.team.name),
   );
 }
+
+/* ---------- Podium ---------- */
+
+export function matchWinner(match: Match | null | undefined, teams: Team[]): Team | null {
+  if (!match || match.status !== "finished") return null;
+  const { home_team_id, away_team_id, home_score, away_score, home_pens, away_pens } = match;
+  let winnerId: string | null = null;
+  if (home_score > away_score) winnerId = home_team_id;
+  else if (away_score > home_score) winnerId = away_team_id;
+  else if (home_pens !== null && away_pens !== null)
+    winnerId = home_pens > away_pens ? home_team_id : away_team_id;
+  return teams.find((t) => t.id === winnerId) ?? null;
+}
+
+export function matchLoser(match: Match | null | undefined, teams: Team[]): Team | null {
+  const w = matchWinner(match, teams);
+  if (!match || !w) return null;
+  const loserId = w.id === match.home_team_id ? match.away_team_id : match.home_team_id;
+  return teams.find((t) => t.id === loserId) ?? null;
+}
+
+/** Teams that actually take part (appear in at least one fixture). */
+export function participatingTeams(data: TournamentData): Team[] {
+  const ids = new Set<string>();
+  for (const m of data.matches) {
+    if (m.home_team_id) ids.add(m.home_team_id);
+    if (m.away_team_id) ids.add(m.away_team_id);
+  }
+  for (const t of data.teams) if (t.group_id) ids.add(t.id);
+  return data.teams.filter((t) => ids.has(t.id));
+}
+
+export function tournamentPodium(data: TournamentData) {
+  const finalMatch = data.matches.find((m) => m.stage === "final") ?? null;
+  const thirdMatch = data.matches.find((m) => m.stage === "3rd") ?? null;
+  const champion = matchWinner(finalMatch, data.teams);
+  const runnerUp = matchLoser(finalMatch, data.teams);
+  const third = matchWinner(thirdMatch, data.teams);
+  const best = goldenBall(data)[0] ?? null;
+  const boot = topScorers(data.goals, data.teams)[0] ?? null;
+  return { finalMatch, thirdMatch, champion, runnerUp, third, best, boot };
+}
