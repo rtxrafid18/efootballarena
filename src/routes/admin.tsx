@@ -203,8 +203,9 @@ function SettingsTab({ data }: { data: ReturnType<typeof useTournament>["data"] 
         </div>
       </div>
       <PrimaryButton onClick={save} icon={<Save className="h-4 w-4" />}>Save settings</PrimaryButton>
+    </div>
 
-      <ResetPanel />
+    <ResetPanel />
     </div>
   );
 }
