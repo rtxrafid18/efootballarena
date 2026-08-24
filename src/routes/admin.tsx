@@ -173,7 +173,8 @@ function SettingsTab({ data }: { data: ReturnType<typeof useTournament>["data"] 
   }
 
   return (
-    <div className="card-elevated p-5 max-w-xl space-y-4">
+    <div className="max-w-xl space-y-6">
+    <div className="card-elevated p-5 space-y-4">
       <div>
         <Label>Tournament name</Label>
         <Input value={name} onChange={(e) => setName(e.target.value)} />
@@ -202,8 +203,9 @@ function SettingsTab({ data }: { data: ReturnType<typeof useTournament>["data"] 
         </div>
       </div>
       <PrimaryButton onClick={save} icon={<Save className="h-4 w-4" />}>Save settings</PrimaryButton>
+    </div>
 
-      <ResetPanel />
+    <ResetPanel />
     </div>
   );
 }

@@ -60,6 +60,35 @@ function HomePage() {
         }
       />
 
+      <section className="mb-8 grid grid-cols-2 md:grid-cols-4 gap-3 stagger-flip">
+        {[
+          { label: "Teams", value: data.teams.length, icon: "🛡️" },
+          {
+            label: "Matches played",
+            value: data.matches.filter((m) => m.status === "finished").length,
+            icon: "🏟️",
+          },
+          { label: "Goals scored", value: data.goals.length, icon: "⚽" },
+          {
+            label: "Goals / match",
+            value: (() => {
+              const played = data.matches.filter((m) => m.status === "finished").length;
+              return played ? (data.goals.length / played).toFixed(1) : "0.0";
+            })(),
+            icon: "📈",
+          },
+        ].map((s) => (
+          <div key={s.label} className="card-elevated lift p-4 overflow-hidden">
+            <div className="absolute inset-x-0 top-0 h-[2px] ribbon-strip opacity-50" />
+            <div className="text-lg leading-none mb-2">{s.icon}</div>
+            <div className="font-display text-2xl md:text-3xl font-extrabold tabular-nums text-accent">
+              {s.value}
+            </div>
+            <div className="eyebrow mt-1 opacity-70">{s.label}</div>
+          </div>
+        ))}
+      </section>
+
       {live.length > 0 && (
         <section className="mb-8">
           <SectionTitle title="Live now" tone="live" />
