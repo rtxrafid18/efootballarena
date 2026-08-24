@@ -59,14 +59,17 @@ function HomePage() {
         title={data.settings.tournament_name}
         subtitle={
           data.settings.tournament_format === "groups"
-            ? "48 Teams · 12 Groups · Knockout"
-            : "Direct Knockout · Round of 32"
+            ? `${teamsInPlay.length} Teams · ${data.groups.length} Groups · Knockout`
+            : `Direct Knockout · ${teamsInPlay.length} Teams`
         }
       />
 
+      <Podium data={data} />
+
       <section className="mb-8 grid grid-cols-2 md:grid-cols-4 gap-3 stagger-flip">
         {[
-          { label: "Teams", value: data.teams.length, icon: "🛡️" },
+          { label: "Teams", value: teamsInPlay.length, icon: "🛡️" },
+
           {
             label: "Matches played",
             value: data.matches.filter((m) => m.status === "finished").length,
