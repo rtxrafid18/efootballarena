@@ -3,8 +3,10 @@ import { AppLayout, PageHeader } from "@/components/layout/AppLayout";
 import { useTournament } from "@/hooks/useTournament";
 import { MatchCard } from "@/components/match/MatchCard";
 import { Bulletin } from "@/components/bulletin/Bulletin";
+import { Podium } from "@/components/podium/Podium";
 import { buildBulletin } from "@/lib/bulletin";
-import { topScorers, goldenBall } from "@/lib/tournament";
+import { topScorers, goldenBall, participatingTeams } from "@/lib/tournament";
+
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -46,6 +48,8 @@ function HomePage() {
   const balls = goldenBall(data).slice(0, 5);
   const bulletin = buildBulletin(data);
   const thirdPlace = data.matches.find((m) => m.stage === "3rd") ?? null;
+  const teamsInPlay = participatingTeams(data);
+
 
 
 
@@ -55,14 +59,17 @@ function HomePage() {
         title={data.settings.tournament_name}
         subtitle={
           data.settings.tournament_format === "groups"
-            ? "48 Teams · 12 Groups · Knockout"
-            : "Direct Knockout · Round of 32"
+            ? `${teamsInPlay.length} Teams · ${data.groups.length} Groups · Knockout`
+            : `Direct Knockout · ${teamsInPlay.length} Teams`
         }
       />
 
+      <Podium data={data} />
+
       <section className="mb-8 grid grid-cols-2 md:grid-cols-4 gap-3 stagger-flip">
         {[
-          { label: "Teams", value: data.teams.length, icon: "🛡️" },
+          { label: "Teams", value: teamsInPlay.length, icon: "🛡️" },
+
           {
             label: "Matches played",
             value: data.matches.filter((m) => m.status === "finished").length,
