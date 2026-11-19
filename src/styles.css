@@ -799,3 +799,43 @@ a, button, .card-elevated, .lift, [role="button"] {
   }
 }
 
+
+/* ---------------- Champions League theme (club competition) ---------------- */
+html[data-theme="ucl"] {
+  --font-display: "Saira Condensed", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Titillium Web", ui-sans-serif, system-ui, sans-serif;
+  --font-numeric: "Saira Condensed", ui-sans-serif, system-ui, sans-serif;
+  --background: oklch(0.14 0.045 268);
+  --surface: oklch(0.19 0.055 268);
+  --surface-2: oklch(0.235 0.06 268);
+  --card: oklch(0.19 0.055 268);
+  --popover: oklch(0.19 0.055 268);
+  --secondary: oklch(0.26 0.06 268);
+  --muted: oklch(0.24 0.05 268);
+  --muted-foreground: oklch(0.72 0.03 260);
+  --border: oklch(0.3 0.06 268);
+  --input: oklch(0.27 0.06 268);
+  --primary: oklch(0.45 0.2 264);
+  --primary-foreground: oklch(0.98 0.005 250);
+  --accent: oklch(0.86 0.09 220);
+  --accent-foreground: oklch(0.15 0.05 268);
+  --ring: oklch(0.86 0.09 220);
+  /* legacy brand vars reused by every effect */
+  --maroon: oklch(0.42 0.2 264);
+  --gold: oklch(0.86 0.09 220);
+  --sidebar: oklch(0.16 0.05 268);
+  --sidebar-primary: oklch(0.45 0.2 264);
+  --sidebar-ring: oklch(0.86 0.09 220);
+  --chart-1: oklch(0.86 0.09 220);
+  --chart-2: oklch(0.45 0.2 264);
+}
+html[data-theme="ucl"] body { font-family: var(--font-sans); }
+html[data-theme="ucl"] .font-display { letter-spacing: 0.04em; }
+html[data-theme="ucl"] body,
+html[data-theme="ucl"] .font-sans { font-family: "Titillium Web", ui-sans-serif, system-ui, sans-serif; }
+html[data-theme="ucl"] h1, html[data-theme="ucl"] h2, html[data-theme="ucl"] h3,
+html[data-theme="ucl"] h4, html[data-theme="ucl"] .font-display,
+html[data-theme="ucl"] .section-title, html[data-theme="ucl"] .eyebrow {
+  font-family: "Saira Condensed", ui-sans-serif, system-ui, sans-serif;
+  font-variation-settings: normal;
+}

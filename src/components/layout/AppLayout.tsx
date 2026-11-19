@@ -1,5 +1,6 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import type { ReactNode } from "react";
+import { useEffect, type ReactNode } from "react";
+import { useTournament } from "@/hooks/useTournament";
 import { cn } from "@/lib/utils";
 import { Trophy, ShieldHalf, LayoutGrid, Swords, Award, Settings } from "lucide-react";
 import { GoalCelebration } from "@/components/match/GoalCelebration";
@@ -18,6 +19,7 @@ const nav = [
 
 export function AppLayout({ children }: { children: ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const isUcl = useCompetition() === "ucl";
 
   return (
     <div className="min-h-screen w-full flex flex-col">
@@ -32,9 +34,9 @@ export function AppLayout({ children }: { children: ReactNode }) {
 
             <div className="leading-none">
               <div className="font-display text-[15px] font-extrabold tracking-[0.14em] uppercase gold-shimmer-text">
-                eFootball Cup
+                {isUcl ? "eFootball League" : "eFootball Cup"}
               </div>
-              <div className="eyebrow mt-1.5 opacity-70">World Tournament</div>
+              <div className="eyebrow mt-1.5 opacity-70">{isUcl ? "Champions · Club Edition" : "World Tournament"}</div>
             </div>
           </Link>
 
@@ -132,7 +134,7 @@ export function PageHeader({
         <div className="min-w-0">
           <div className="eyebrow flex items-center gap-2.5">
             <span className="inline-block h-[2px] w-7 bg-accent/70 rounded-full" />
-            FIFA eFootball · Matchday
+            {useCompetition() === "ucl" ? "Champions League · Matchnight" : "FIFA eFootball · Matchday"}
           </div>
           <h1 className="mt-3 text-3xl md:text-5xl font-extrabold tracking-tight text-foreground">
             {title}
@@ -148,4 +150,14 @@ export function PageHeader({
       <div className="absolute inset-x-0 bottom-0 hairline opacity-70" />
     </div>
   );
+}
+
+/** Current competition style; also applies the matching site theme. */
+export function useCompetition() {
+  const { data } = useTournament();
+  const comp = data?.settings.competition ?? "worldcup";
+  useEffect(() => {
+    document.documentElement.dataset.theme = comp;
+  }, [comp]);
+  return comp;
 }

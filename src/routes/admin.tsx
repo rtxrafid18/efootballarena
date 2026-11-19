@@ -1,3 +1,4 @@
+import { lookupTeamLogo } from "@/lib/logo.functions";
 import { createFileRoute } from "@tanstack/react-router";
 import { AppLayout, PageHeader } from "@/components/layout/AppLayout";
 import { useTournament, useInvalidateTournament } from "@/hooks/useTournament";
@@ -161,11 +162,13 @@ function SettingsTab({ data }: { data: ReturnType<typeof useTournament>["data"] 
   const refresh = useInvalidateTournament();
   const [name, setName] = useState(data.settings.tournament_name);
   const [format, setFormat] = useState(data.settings.tournament_format);
+  const [competition, setCompetition] = useState(data.settings.competition);
 
   async function save() {
     const { error } = await write("settings", "update", {
       tournament_name: name,
       tournament_format: format,
+      competition,
     }, 1);
     if (error) return toast.error(error.message);
     toast.success("Settings updated");
@@ -178,6 +181,34 @@ function SettingsTab({ data }: { data: ReturnType<typeof useTournament>["data"] 
       <div>
         <Label>Tournament name</Label>
         <Input value={name} onChange={(e) => setName(e.target.value)} />
+      </div>
+      <div>
+        <Label>Competition</Label>
+        <div className="grid grid-cols-2 gap-2">
+          {[
+            { key: "worldcup", title: "🌍 World Cup", sub: "National teams · gold & maroon" },
+            { key: "ucl", title: "⭐ Champions League", sub: "Clubs · navy & silver" },
+          ].map((opt) => (
+            <button
+              key={opt.key}
+              onClick={() => {
+                const c = opt.key as "worldcup" | "ucl";
+                setCompetition(c);
+                if (name === "eFootball World Cup" && c === "ucl") setName("eFootball Champions League");
+                if (name === "eFootball Champions League" && c === "worldcup") setName("eFootball World Cup");
+              }}
+              className={cn(
+                "text-left p-3 rounded-lg border transition",
+                competition === opt.key
+                  ? "border-accent bg-[color-mix(in_oklab,var(--gold)_10%,transparent)]"
+                  : "border-border hover:border-muted-foreground/40",
+              )}
+            >
+              <div className="text-sm font-bold">{opt.title}</div>
+              <div className="text-xs text-muted-foreground">{opt.sub}</div>
+            </button>
+          ))}
+        </div>
       </div>
       <div>
         <Label>Format</Label>
@@ -308,17 +339,59 @@ function TeamsTab({ data }: { data: ReturnType<typeof useTournament>["data"] & o
   const [logoUrl, setLogoUrl] = useState("");
   const [groupId, setGroupId] = useState<string>("");
 
+  const kind = data.settings.competition;
+  const [busy, setBusy] = useState(false);
+
   async function addTeam() {
     if (!name.trim()) return toast.error("Team name required");
+    setBusy(true);
+    let logo = logoUrl.trim() || null;
+    let short = shortName.trim() || null;
+    if (!logo) {
+      try {
+        const { result } = await lookupTeamLogo({ data: { name: name.trim(), kind } });
+        if (result) { logo = result.logo; short = short ?? result.short; }
+        else toast.message("No logo found online — you can paste a logo link");
+      } catch { /* keep going without logo */ }
+    }
+    setBusy(false);
     const { error } = await write("teams", "insert", {
       name: name.trim(),
-      short_name: shortName.trim() || null,
-      logo_url: logoUrl.trim() || null,
+      short_name: short,
+      logo_url: logo,
       group_id: groupId || null,
     });
     if (error) return toast.error(error.message);
     setName(""); setShortName(""); setLogoUrl(""); setGroupId("");
     toast.success("Team added");
+    refresh();
+  }
+
+  async function fetchMissingLogos() {
+    const missing = data.teams.filter((t) => !t.logo_url);
+    if (!missing.length) return toast.success("Every team already has a logo");
+    setBusy(true);
+    let found = 0;
+    for (const t of missing) {
+      try {
+        const { result } = await lookupTeamLogo({ data: { name: t.name, kind } });
+        if (result) {
+          const { error } = await write("teams", "update", { logo_url: result.logo, short_name: t.short_name ?? result.short }, t.id);
+          if (!error) found++;
+        }
+      } catch { /* skip */ }
+    }
+    setBusy(false);
+    toast.success(`Found ${found} of ${missing.length} logos`);
+    refresh();
+  }
+
+  async function refetchLogo(t: { id: string; name: string }) {
+    const { result } = await lookupTeamLogo({ data: { name: t.name, kind } });
+    if (!result) return toast.error(`No logo found for ${t.name}`);
+    const { error } = await write("teams", "update", { logo_url: result.logo }, t.id);
+    if (error) return toast.error(error.message);
+    toast.success(`Logo updated for ${t.name}`);
     refresh();
   }
 
@@ -339,14 +412,20 @@ function TeamsTab({ data }: { data: ReturnType<typeof useTournament>["data"] & o
   return (
     <div className="space-y-6">
       <div className="card-elevated p-5 grid gap-3 md:grid-cols-5">
-        <Input placeholder="Team name" value={name} onChange={(e) => setName(e.target.value)} />
+        <Input placeholder={kind === "ucl" ? "Club name (e.g. Real Madrid)" : "Country (e.g. Brazil)"} value={name} onChange={(e) => setName(e.target.value)} />
         <Input placeholder="Short (BRA)" value={shortName} onChange={(e) => setShortName(e.target.value)} />
-        <Input placeholder="Logo URL" value={logoUrl} onChange={(e) => setLogoUrl(e.target.value)} />
+        <Input placeholder="Logo link (auto if empty)" value={logoUrl} onChange={(e) => setLogoUrl(e.target.value)} />
         <Select value={groupId} onChange={(e) => setGroupId(e.target.value)}>
           <option value="">No group</option>
           {data.groups.map((g) => <option key={g.id} value={g.id}>Group {g.name}</option>)}
         </Select>
-        <PrimaryButton onClick={addTeam} icon={<Plus className="h-4 w-4" />}>Add team</PrimaryButton>
+        <PrimaryButton onClick={addTeam} icon={<Plus className="h-4 w-4" />}>{busy ? "Finding logo…" : "Add team"}</PrimaryButton>
+        <p className="md:col-span-5 text-xs text-muted-foreground flex flex-wrap items-center gap-3">
+          Logos are found online automatically when you add a team.
+          <button onClick={fetchMissingLogos} disabled={busy} className="underline text-accent disabled:opacity-50">
+            Find logos for teams without one
+          </button>
+        </p>
       </div>
 
       <div className="card-elevated overflow-hidden">
@@ -374,6 +453,7 @@ function TeamsTab({ data }: { data: ReturnType<typeof useTournament>["data"] & o
                   </Select>
                 </td>
                 <td className="px-3 py-2 text-right">
+                  <IconButton onClick={() => refetchLogo(t)}>🔄</IconButton>
                   <IconButton onClick={() => deleteTeam(t.id)}><Trash2 className="h-4 w-4" /></IconButton>
                 </td>
               </tr>

@@ -59,7 +59,10 @@ export type Settings = {
   id: number;
   tournament_format: "groups" | "knockout";
   tournament_name: string;
+  competition: Competition;
 };
+
+export type Competition = "worldcup" | "ucl";
 
 export const stageLabel: Record<MatchStage, string> = {
   group: "Group Stage",
@@ -82,10 +85,13 @@ export async function fetchAll() {
     supabase.from("gk_stats").select("*").order("clean_sheets", { ascending: false }),
   ]);
   return {
-    settings: (settings.data as Settings | null) ?? {
+    settings: (settings.data
+      ? { ...(settings.data as Settings), competition: ((settings.data as Settings).competition === "ucl" ? "ucl" : "worldcup") as Competition }
+      : null) ?? {
       id: 1,
       tournament_format: "groups" as const,
       tournament_name: "eFootball World Cup",
+      competition: "worldcup" as Competition,
     },
     teams: (teams.data ?? []) as Team[],
     groups: (groups.data ?? []) as Group[],
