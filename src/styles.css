@@ -171,10 +171,10 @@
 }
 
 @utility gold-gradient {
-  background-image: linear-gradient(135deg, oklch(0.9 0.13 90), oklch(0.74 0.15 72));
+  background-image: linear-gradient(135deg, color-mix(in oklab, var(--gold) 75%, white), color-mix(in oklab, var(--gold) 88%, black));
 }
 @utility maroon-gradient {
-  background-image: linear-gradient(135deg, oklch(0.46 0.16 15), oklch(0.28 0.10 15));
+  background-image: linear-gradient(135deg, color-mix(in oklab, var(--maroon) 100%, white 4%), color-mix(in oklab, var(--maroon) 62%, black));
 }
 
 @utility hairline {
@@ -257,11 +257,11 @@
 @utility gold-shimmer-text {
   background: linear-gradient(
     100deg,
-    oklch(0.88 0.09 88) 0%,
+    color-mix(in oklab, var(--gold) 80%, white) 0%,
     oklch(0.99 0.03 95) 44%,
     #ffffff 50%,
     oklch(0.99 0.03 95) 56%,
-    oklch(0.88 0.09 88) 100%
+    color-mix(in oklab, var(--gold) 80%, white) 100%
   );
   background-size: 220% 100%;
   -webkit-background-clip: text;
@@ -277,7 +277,7 @@
   overflow: hidden;
   background:
     radial-gradient(700px 240px at 8% -40%, color-mix(in oklab, var(--gold) 16%, transparent), transparent 62%),
-    linear-gradient(115deg, oklch(0.27 0.115 15) 0%, oklch(0.19 0.03 265) 58%, oklch(0.22 0.075 15) 100%);
+    linear-gradient(115deg, color-mix(in oklab, var(--maroon) 55%, black) 0%, var(--surface) 58%, color-mix(in oklab, var(--maroon) 40%, black) 100%);
   border: 1px solid color-mix(in oklab, var(--gold) 22%, var(--border));
   box-shadow:
     inset 0 1px 0 color-mix(in oklab, var(--gold) 18%, transparent),
@@ -321,7 +321,7 @@
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--accent-foreground);
-  background-image: linear-gradient(135deg, oklch(0.9 0.13 90), oklch(0.74 0.15 72));
+  background-image: linear-gradient(135deg, color-mix(in oklab, var(--gold) 75%, white), color-mix(in oklab, var(--gold) 88%, black));
   box-shadow: 0 10px 24px -14px color-mix(in oklab, var(--gold) 90%, transparent);
   transition: transform 0.3s var(--ease-out-expo), box-shadow 0.3s var(--ease-out-expo);
   &::after {
@@ -569,7 +569,7 @@
     position: absolute;
     inset: 4px 6px;
     border-radius: 14px;
-    background-image: linear-gradient(135deg, oklch(0.9 0.13 90), oklch(0.74 0.15 72));
+    background-image: linear-gradient(135deg, color-mix(in oklab, var(--gold) 75%, white), color-mix(in oklab, var(--gold) 88%, black));
     box-shadow: 0 8px 20px -10px color-mix(in oklab, var(--gold) 90%, transparent);
     animation: nav-pop 0.45s var(--ease-spring) both;
     z-index: 0;
