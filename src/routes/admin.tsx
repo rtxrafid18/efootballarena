@@ -444,7 +444,18 @@ function TeamsTab({ data }: { data: ReturnType<typeof useTournament>["data"] & o
             )}
             {data.teams.map((t) => (
               <tr key={t.id} className="border-t border-border/60">
-                <td className="px-3 py-2 font-medium">{t.name}</td>
+                <td className="px-3 py-2 font-medium">
+                  <span className="flex min-w-0 items-center gap-2.5">
+                    <span className="grid h-8 w-8 shrink-0 place-items-center overflow-hidden rounded-full bg-surface-2 ring-1 ring-border">
+                      {t.logo_url ? (
+                        <img src={t.logo_url} alt={`${t.name} logo`} loading="lazy" className="h-full w-full object-contain" />
+                      ) : (
+                        <span className="text-[10px] font-bold text-muted-foreground">{(t.short_name || t.name).slice(0, 3).toUpperCase()}</span>
+                      )}
+                    </span>
+                    <span className="truncate">{t.name}</span>
+                  </span>
+                </td>
                 <td className="px-3 py-2 text-muted-foreground">{t.short_name ?? "—"}</td>
                 <td className="px-3 py-2">
                   <Select value={t.group_id ?? ""} onChange={(e) => updateTeamGroup(t.id, e.target.value)}>
