@@ -8,6 +8,13 @@
       "when": 1795103141068,
       "tag": "0000_add_competition_setting",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1795258992746,
+      "tag": "0001_add_knockout_leg_number",
+      "breakpoints": true
     }
   ]
 }

@@ -1,5 +1,5 @@
 import type { Goal, Match, Team } from "@/lib/tournament";
-import { stageLabel } from "@/lib/tournament";
+import { aggregateScore, stageLabel } from "@/lib/tournament";
 import { TeamBadge } from "@/components/team/TeamBadge";
 import { cn } from "@/lib/utils";
 import { Link } from "@tanstack/react-router";
@@ -9,11 +9,13 @@ export function MatchCard({
   teams,
   goals,
   compact = false,
+  relatedMatches = [match],
 }: {
   match: Match;
   teams: Team[];
   goals: Goal[];
   compact?: boolean;
+  relatedMatches?: Match[];
 }) {
   const teamById = new Map(teams.map((t) => [t.id, t]));
   const home = match.home_team_id ? teamById.get(match.home_team_id) : null;
@@ -27,6 +29,7 @@ export function MatchCard({
 
   const isLive = match.status === "live";
   const isFinished = match.status === "finished";
+  const aggregate = aggregateScore(match, relatedMatches);
   const hasPens = match.home_pens !== null && match.away_pens !== null;
   const penWinner = hasPens
     ? (match.home_pens ?? 0) > (match.away_pens ?? 0)
@@ -53,11 +56,25 @@ export function MatchCard({
 
       {/* header */}
       <div className="flex items-center justify-between px-4 pt-3.5 pb-2">
-        <span className="font-display text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
+        <span className="min-w-0 truncate font-display text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
           {stageLabel[match.stage]}
+          {aggregate && ` · Tie ${match.bracket_slot} · Leg ${match.leg_number}`}
         </span>
-        <StatusBadge status={match.status} />
+        <div className="flex shrink-0 items-center gap-2">
+          {aggregate && <span className="text-[9px] font-bold uppercase text-accent">2 legs</span>}
+          <StatusBadge status={match.status} />
+        </div>
       </div>
+
+      {aggregate && (
+        <div className="mx-4 mb-2 flex flex-wrap items-center justify-center gap-x-1.5 rounded-md border border-border/60 bg-surface-2/50 px-2 py-1.5 text-[10px] uppercase text-muted-foreground">
+          <span className="font-semibold">Aggregate</span>
+          <span className="font-display text-sm font-extrabold tabular-nums text-foreground">
+            {home?.short_name ?? home?.name ?? "TBD"} {aggregate.homeScore}–{aggregate.awayScore} {away?.short_name ?? away?.name ?? "TBD"}
+          </span>
+          <span>{aggregate.complete ? "· tie complete" : "· in progress"}</span>
+        </div>
+      )}
 
       {/* scoreline */}
       <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 px-4 py-2.5">

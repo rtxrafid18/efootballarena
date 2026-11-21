@@ -8,3 +8,5 @@
 > Commits you push to the connected branch sync back to Lovable and show up in
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
+
+- Store both knockout legs as separate fixtures sharing a bracket slot; use leg numbers to calculate aggregate scores so each leg keeps its own score, goals, and status.

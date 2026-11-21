@@ -1,0 +1,1 @@
+ALTER TABLE public.matches ADD COLUMN IF NOT EXISTS leg_number smallint NOT NULL DEFAULT 1 CHECK (leg_number IN (1, 2));

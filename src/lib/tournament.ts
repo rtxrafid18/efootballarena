@@ -26,6 +26,7 @@ export type Match = {
   mvp_player_name: string | null;
   mvp_team_id: string | null;
   bracket_slot: number | null;
+  leg_number: number;
   home_pens: number | null;
   away_pens: number | null;
   went_to_extra_time: boolean;
@@ -103,6 +104,71 @@ export async function fetchAll() {
 }
 
 export type TournamentData = Awaited<ReturnType<typeof fetchAll>>;
+
+const TWO_LEG_STAGES: MatchStage[] = ["r16", "qf", "sf"];
+
+export function supportsTwoLegs(stage: MatchStage): boolean {
+  return TWO_LEG_STAGES.includes(stage);
+}
+
+export type AggregateScore = {
+  homeScore: number;
+  awayScore: number;
+  legs: Match[];
+  complete: boolean;
+};
+
+/** Aggregate scores are oriented to the selected fixture's home and away teams. */
+export function aggregateScore(match: Match, matches: Match[]): AggregateScore | null {
+  if (!supportsTwoLegs(match.stage) || match.bracket_slot === null) return null;
+  const legs = matches
+    .filter((candidate) => candidate.stage === match.stage && candidate.bracket_slot === match.bracket_slot)
+    .sort((a, b) => a.leg_number - b.leg_number);
+  const hasLegTwo = legs.some((leg) => leg.leg_number === 2);
+  let homeScore = 0;
+  let awayScore = 0;
+
+  for (const leg of legs) {
+    if (leg.home_team_id === match.home_team_id && leg.away_team_id === match.away_team_id) {
+      homeScore += leg.home_score;
+      awayScore += leg.away_score;
+    } else if (leg.away_team_id === match.home_team_id && leg.home_team_id === match.away_team_id) {
+      homeScore += leg.away_score;
+      awayScore += leg.home_score;
+    }
+  }
+
+  return {
+    homeScore,
+    awayScore,
+    legs,
+    complete: legs.some((leg) => leg.leg_number === 1 && leg.status === "finished") &&
+      legs.some((leg) => leg.leg_number === 2 && leg.status === "finished"),
+  };
+}
+
+function winnerId(match: Match, matches: Match[] = [match]): string | null {
+  const aggregate = aggregateScore(match, matches);
+  if (aggregate) {
+    if (!aggregate.complete) return null;
+    if (aggregate.homeScore > aggregate.awayScore) return match.home_team_id;
+    if (aggregate.awayScore > aggregate.homeScore) return match.away_team_id;
+    const secondLeg = aggregate.legs.find((leg) => leg.leg_number === 2);
+    if (secondLeg?.home_pens !== null && secondLeg?.home_pens !== undefined &&
+      secondLeg.away_pens !== null && secondLeg.away_pens !== undefined) {
+      return secondLeg.home_pens > secondLeg.away_pens ? secondLeg.home_team_id : secondLeg.away_team_id;
+    }
+    return null;
+  }
+
+  if (match.status !== "finished") return null;
+  if (match.home_score > match.away_score) return match.home_team_id;
+  if (match.away_score > match.home_score) return match.away_team_id;
+  if (match.home_pens !== null && match.away_pens !== null) {
+    return match.home_pens > match.away_pens ? match.home_team_id : match.away_team_id;
+  }
+  return null;
+}
 
 /* ---------- Aggregations ---------- */
 
@@ -198,19 +264,18 @@ export function groupStandings(groupId: string, data: TournamentData): Standing[
 
 /* ---------- Podium ---------- */
 
-export function matchWinner(match: Match | null | undefined, teams: Team[]): Team | null {
-  if (!match || match.status !== "finished") return null;
-  const { home_team_id, away_team_id, home_score, away_score, home_pens, away_pens } = match;
-  let winnerId: string | null = null;
-  if (home_score > away_score) winnerId = home_team_id;
-  else if (away_score > home_score) winnerId = away_team_id;
-  else if (home_pens !== null && away_pens !== null)
-    winnerId = home_pens > away_pens ? home_team_id : away_team_id;
-  return teams.find((t) => t.id === winnerId) ?? null;
+export function matchWinner(
+  match: Match | null | undefined,
+  teams: Team[],
+  matches?: Match[],
+): Team | null {
+  if (!match) return null;
+  const winningTeamId = winnerId(match, matches ?? [match]);
+  return teams.find((team) => team.id === winningTeamId) ?? null;
 }
 
-export function matchLoser(match: Match | null | undefined, teams: Team[]): Team | null {
-  const w = matchWinner(match, teams);
+export function matchLoser(match: Match | null | undefined, teams: Team[], matches?: Match[]): Team | null {
+  const w = matchWinner(match, teams, matches);
   if (!match || !w) return null;
   const loserId = w.id === match.home_team_id ? match.away_team_id : match.home_team_id;
   return teams.find((t) => t.id === loserId) ?? null;

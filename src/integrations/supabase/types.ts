@@ -156,6 +156,7 @@ export type Database = {
           home_score: number
           home_team_id: string | null
           id: string
+          leg_number: number
           mvp_player_name: string | null
           mvp_team_id: string | null
           scheduled_at: string | null
@@ -174,6 +175,7 @@ export type Database = {
           home_score?: number
           home_team_id?: string | null
           id?: string
+          leg_number?: number
           mvp_player_name?: string | null
           mvp_team_id?: string | null
           scheduled_at?: string | null
@@ -192,6 +194,7 @@ export type Database = {
           home_score?: number
           home_team_id?: string | null
           id?: string
+          leg_number?: number
           mvp_player_name?: string | null
           mvp_team_id?: string | null
           scheduled_at?: string | null

@@ -8,7 +8,7 @@ import { useState, useEffect, useRef } from "react";
 import { toast, Toaster } from "sonner";
 import { cn } from "@/lib/utils";
 import type { Match, MatchStage, MatchStatus, Team } from "@/lib/tournament";
-import { stageLabel } from "@/lib/tournament";
+import { aggregateScore, stageLabel, supportsTwoLegs } from "@/lib/tournament";
 import { Plus, Trash2, Save, Lock, ShieldCheck, AlertTriangle, RotateCcw } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 
@@ -481,6 +481,7 @@ function TeamsTab({ data }: { data: ReturnType<typeof useTournament>["data"] & o
 function MatchesTab({ data }: { data: ReturnType<typeof useTournament>["data"] & object }) {
   const refresh = useInvalidateTournament();
   const [stage, setStage] = useState<MatchStage>("group");
+  const [twoLegs, setTwoLegs] = useState(false);
   const [groupId, setGroupId] = useState("");
   const [homeId, setHomeId] = useState("");
   const [awayId, setAwayId] = useState("");
@@ -493,23 +494,48 @@ function MatchesTab({ data }: { data: ReturnType<typeof useTournament>["data"] &
 
   async function createMatch() {
     if (!homeId || !awayId || homeId === awayId) return toast.error("Pick two different teams");
-    const { error } = await write("matches", "insert", {
+    const createTwoLegs = supportsTwoLegs(stage) && twoLegs;
+    const tieSlot = createTwoLegs
+      ? data.matches
+          .filter((match) => match.stage === stage && match.bracket_slot !== null)
+          .reduce((max, match) => Math.max(max, match.bracket_slot ?? 0), 0) + 1
+      : null;
+    const base = {
       stage,
       group_id: stage === "group" ? groupId || null : null,
       home_team_id: homeId,
       away_team_id: awayId,
       status: "scheduled",
-    });
+      bracket_slot: tieSlot,
+      leg_number: 1,
+    };
+    const { error } = await write("matches", "insert", base);
     if (error) return toast.error(error.message);
+    if (createTwoLegs && tieSlot !== null) {
+      const returnLeg = await write("matches", "insert", {
+        ...base,
+        home_team_id: awayId,
+        away_team_id: homeId,
+        leg_number: 2,
+      });
+      if (returnLeg.error) {
+        refresh();
+        return toast.error(`Leg 1 was created, but Leg 2 failed: ${returnLeg.error.message}`);
+      }
+    }
     setHomeId(""); setAwayId("");
-    toast.success("Match created");
+    toast.success(createTwoLegs ? "Two-leg tie created" : "Match created");
     refresh();
   }
 
   return (
     <div className="space-y-6">
-      <div className="card-elevated p-5 grid gap-3 md:grid-cols-6">
-        <Select value={stage} onChange={(e) => setStage(e.target.value as MatchStage)}>
+      <div className="card-elevated p-5 grid gap-3 md:grid-cols-7">
+        <Select value={stage} onChange={(e) => {
+          const nextStage = e.target.value as MatchStage;
+          setStage(nextStage);
+          setTwoLegs(supportsTwoLegs(nextStage));
+        }}>
           {(["group","r32","r16","qf","sf","3rd","final"] as MatchStage[]).map((s) => (
             <option key={s} value={s}>{stageLabel[s]}</option>
           ))}
@@ -528,8 +554,20 @@ function MatchesTab({ data }: { data: ReturnType<typeof useTournament>["data"] &
           <option value="">Away…</option>
           {data.teams.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
         </Select>
+        <label className="flex items-center gap-2 text-xs text-muted-foreground">
+          <input
+            type="checkbox"
+            checked={supportsTwoLegs(stage) && twoLegs}
+            disabled={!supportsTwoLegs(stage)}
+            onChange={(e) => setTwoLegs(e.target.checked)}
+            className="h-4 w-4 accent-[var(--accent)]"
+          />
+          Create both legs
+        </label>
         <div className="md:col-span-2">
-          <PrimaryButton onClick={createMatch} icon={<Plus className="h-4 w-4" />}>Create match</PrimaryButton>
+          <PrimaryButton onClick={createMatch} icon={<Plus className="h-4 w-4" />}>
+            {supportsTwoLegs(stage) && twoLegs ? "Create two-leg tie" : "Create match"}
+          </PrimaryButton>
         </div>
       </div>
 
@@ -565,6 +603,7 @@ function MatchesTab({ data }: { data: ReturnType<typeof useTournament>["data"] &
             teams={data.teams}
             goals={data.goals.filter((g) => g.match_id === m.id)}
             expanded={expanded === m.id}
+            allMatches={data.matches}
             onToggle={() => setExpanded(expanded === m.id ? null : m.id)}
             onChange={refresh}
           />
@@ -576,13 +615,15 @@ function MatchesTab({ data }: { data: ReturnType<typeof useTournament>["data"] &
 }
 
 function MatchAdminRow({
-  match, teams, goals, expanded, onToggle, onChange,
+  match, teams, goals, allMatches, expanded, onToggle, onChange,
 }: {
   match: Match; teams: Team[]; goals: { id: string; team_id: string; scorer_name: string; minute: number }[];
+  allMatches: Match[];
   expanded: boolean; onToggle: () => void; onChange: () => void;
 }) {
   const home = teams.find((t) => t.id === match.home_team_id);
   const away = teams.find((t) => t.id === match.away_team_id);
+  const aggregate = aggregateScore(match, allMatches);
 
   async function updateMatch(patch: Partial<Match>) {
     const { error } = await write("matches", "update", patch, match.id);
@@ -600,7 +641,9 @@ function MatchAdminRow({
     <div className="card-elevated overflow-hidden">
       <button onClick={onToggle} className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-surface-2 transition">
         <div className="flex items-center gap-3 min-w-0">
-          <span className="text-[10px] uppercase tracking-widest text-muted-foreground w-20">{stageLabel[match.stage]}</span>
+          <span className="text-[10px] uppercase tracking-widest text-muted-foreground w-28 shrink-0">
+            {stageLabel[match.stage]}{aggregate ? ` · Tie ${match.bracket_slot} · L${match.leg_number}` : ""}
+          </span>
           <span className="font-semibold truncate">{home?.name ?? "TBD"}</span>
           <span className="text-accent font-bold tabular-nums">{match.home_score} - {match.away_score}</span>
           <span className="font-semibold truncate">{away?.name ?? "TBD"}</span>
@@ -610,6 +653,12 @@ function MatchAdminRow({
 
       {expanded && (
         <div className="border-t border-border p-4 space-y-4">
+          {aggregate && (
+            <div className="rounded-md border border-border/70 bg-surface-2/40 px-3 py-2 text-xs text-muted-foreground">
+              Aggregate: <strong className="text-foreground">{home?.name ?? "TBD"} {aggregate.homeScore}–{aggregate.awayScore} {away?.name ?? "TBD"}</strong>
+              <span className="ml-2">{aggregate.complete ? "Both legs complete" : "Awaiting both final scores"}</span>
+            </div>
+          )}
           <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
             <NumberInput label="Home score" value={match.home_score} onChange={(v) => updateMatch({ home_score: v })} />
             <NumberInput label="Away score" value={match.away_score} onChange={(v) => updateMatch({ away_score: v })} />
