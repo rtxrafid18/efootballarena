@@ -11,6 +11,8 @@ export const Route = createFileRoute("/groups")({
       { name: "description", content: "12-group standings with points, goal difference and qualification." },
       { property: "og:title", content: "Groups — eFootball Cup" },
       { property: "og:description", content: "Live group standings for the tournament." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: GroupsPage,

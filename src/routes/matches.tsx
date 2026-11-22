@@ -13,6 +13,8 @@ export const Route = createFileRoute("/matches")({
       { name: "description", content: "All tournament matches with live scores and goal timelines." },
       { property: "og:title", content: "Matches — eFootball Cup" },
       { property: "og:description", content: "All tournament matches, live and finished." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: MatchesPage,
@@ -129,7 +131,7 @@ function MatchesPage() {
               </h2>
               <div className="grid gap-3.5 md:grid-cols-2 stagger-kick">
                 {list.map((m) => (
-                  <MatchCard key={m.id} match={m} teams={data.teams} goals={data.goals} />
+                  <MatchCard key={m.id} match={m} teams={data.teams} goals={data.goals} relatedMatches={data.matches} />
                 ))}
               </div>
             </section>

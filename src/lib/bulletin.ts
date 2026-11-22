@@ -91,11 +91,12 @@ function nextRoundNoun(stage: Match["stage"]) {
 
 /* ---------- builder ---------- */
 
-export function buildBulletin(data: TournamentData): BulletinItem[] {
+export function buildBulletin(data: TournamentData, edition = 0): BulletinItem[] {
   const items: BulletinItem[] = [];
   const teamById = new Map(data.teams.map((t) => [t.id, t]));
+  const choose = <T,>(seed: string, list: T[]) => pick(`${seed}:${edition}`, list);
   const push = (item: BulletinItem) =>
-    items.push({ byline: pick(item.id + "by", BYLINES), ...item });
+    items.push({ byline: choose(`${item.id}:byline`, BYLINES), ...item });
 
   /* ===== 1. Champions ===== */
   const final = data.matches.find((m) => m.stage === "final" && m.status === "finished");
@@ -123,7 +124,7 @@ export function buildBulletin(data: TournamentData): BulletinItem[] {
         tag: "Champions",
         lead: true,
         matchId: final.id,
-        headline: pick(`champ-${final.id}`, [
+        headline: choose(`champ-${final.id}`, [
           `${winner.name} are world champions`,
           `Glory for ${winner.name} — the trophy is theirs`,
           `${winner.name} conquer the world`,
@@ -150,13 +151,13 @@ export function buildBulletin(data: TournamentData): BulletinItem[] {
       matchId: m.id,
       lead: !final,
       headline: leader
-        ? pick(`live-${m.id}-${m.home_score}-${m.away_score}`, [
+        ? choose(`live-${m.id}-${m.home_score}-${m.away_score}`, [
             `${leader.name} lead as the ${stageNoun(m.stage)} tie unfolds`,
             `${leader.name} in front — ${nameOf(h)} ${m.home_score}-${m.away_score} ${nameOf(a)}`,
             `${leader.name} turning the screw against ${nameOf(leader.id === h?.id ? a : h)}`,
             `Advantage ${leader.name} in a tense ${stageNoun(m.stage)} clash`,
           ])
-        : pick(`live-${m.id}-lvl`, [
+        : choose(`live-${m.id}-lvl`, [
             `Nothing between ${nameOf(h)} and ${nameOf(a)} so far`,
             `${nameOf(h)} and ${nameOf(a)} locked together in a gripping tie`,
             `All square as ${nameOf(h)} host ${nameOf(a)}`,
@@ -179,7 +180,7 @@ export function buildBulletin(data: TournamentData): BulletinItem[] {
           kind: "hattrick",
           tag: n >= 4 ? "Masterclass" : "Hat-trick",
           matchId: m.id,
-          headline: pick(`ht-${m.id}-${player}`, [
+          headline: choose(`ht-${m.id}-${player}`, [
             `${player} helps himself to ${n} in the ${stageNoun(m.stage)}`,
             `Matchball for ${player} after a ruthless ${n}-goal display`,
             `${player} runs riot with ${n} goals`,
@@ -240,7 +241,7 @@ export function buildBulletin(data: TournamentData): BulletinItem[] {
 
     if (pensDecided && winner) {
       tag = "Shoot-out drama";
-      headline = pick(seed + "pen", [
+      headline = choose(seed + "pen", [
         `${winner.name} hold their nerve from twelve yards`,
         `Penalty heartbreak for ${nameOf(loser)} as ${winner.name} advance`,
         `${winner.name} survive the shoot-out to reach ${nextRoundNoun(m.stage)}`,
@@ -248,7 +249,7 @@ export function buildBulletin(data: TournamentData): BulletinItem[] {
       ]);
     } else if (!winner) {
       tag = "Stalemate";
-      headline = pick(seed + "draw", [
+      headline = choose(seed + "draw", [
         total === 0
           ? `Goalless grind between ${nameOf(h)} and ${nameOf(a)}`
           : `${nameOf(h)} and ${nameOf(a)} trade blows and share the points`,
@@ -257,7 +258,7 @@ export function buildBulletin(data: TournamentData): BulletinItem[] {
       ]);
     } else if (margin >= 3) {
       tag = "Statement win";
-      headline = pick(seed + "rout", [
+      headline = choose(seed + "rout", [
         `${winner.name} dismantle ${nameOf(loser)} in a ruthless display`,
         `No mercy: ${winner.name} put ${nameOf(loser)} to the sword`,
         `${winner.name} send a warning to the rest of the field`,
@@ -265,21 +266,21 @@ export function buildBulletin(data: TournamentData): BulletinItem[] {
       ]);
     } else if (hero && hero.n > 1) {
       tag = m.stage === "group" ? "Group stage" : stageLabel[m.stage];
-      headline = pick(seed + "hero", [
+      headline = choose(seed + "hero", [
         `${hero.name}'s ${hero.n} goals fire ${winner.name} into ${nextRoundNoun(m.stage)}`,
         `Double delight for ${hero.name} as ${winner.name} prevail`,
         `${hero.name} does it twice over to sink ${nameOf(loser)}`,
       ]);
     } else if (clean) {
       tag = "Clean sheet";
-      headline = pick(seed + "cs", [
+      headline = choose(seed + "cs", [
         `${winner.name} keep it tight and take the spoils`,
         `Solid at the back, clinical up front — ${winner.name} get the job done`,
         `${nameOf(loser)} blunted as ${winner.name} shut up shop`,
       ]);
     } else if (margin === 1) {
       tag = "Squeaky finish";
-      headline = pick(seed + "tight", [
+      headline = choose(seed + "tight", [
         hero
           ? `${hero.name} settles a nervy night for ${winner.name}`
           : `${winner.name} scrape past ${nameOf(loser)}`,
@@ -287,7 +288,7 @@ export function buildBulletin(data: TournamentData): BulletinItem[] {
         `${winner.name} edge a thriller with ${nameOf(loser)}`,
       ]);
     } else {
-      headline = pick(seed + "gen", [
+      headline = choose(seed + "gen", [
         `${winner.name} take control against ${nameOf(loser)}`,
         `${winner.name} march on at the expense of ${nameOf(loser)}`,
         `Job done for ${winner.name} in the ${stageNoun(m.stage)}`,
@@ -321,12 +322,12 @@ export function buildBulletin(data: TournamentData): BulletinItem[] {
       tag: "Golden Boot",
       headline:
         tied.length > 0
-          ? pick(`boot-tie-${lead.goals}`, [
+          ? choose(`boot-tie-${lead.goals}`, [
               `${lead.player} and ${tied.length} rival${tied.length > 1 ? "s" : ""} deadlocked on ${lead.goals}`,
               `The race for the Golden Boot is wide open on ${lead.goals} goals`,
               `No one can shake off ${lead.player} at the top of the charts`,
             ])
-          : pick(`boot-${lead.player}-${lead.goals}`, [
+          : choose(`boot-${lead.player}-${lead.goals}`, [
               `${lead.player} sits top of the scoring charts on ${lead.goals}`,
               `${lead.goals} and counting — ${lead.player} chases the Golden Boot`,
               `${lead.player} is the tournament's deadliest finisher`,
@@ -350,11 +351,11 @@ export function buildBulletin(data: TournamentData): BulletinItem[] {
         gap === null
           ? `${lead.player} stands alone on the Golden Ball board`
           : gap === 0
-            ? pick(`ball-lvl-${lead.score}`, [
+            ? choose(`ball-lvl-${lead.score}`, [
                 `${lead.player} and ${second.player} cannot be separated`,
                 `A dead heat for the tournament's best player award`,
               ])
-            : pick(`ball-${lead.player}-${lead.score}`, [
+            : choose(`ball-${lead.player}-${lead.score}`, [
                 `${lead.player} is the standout performer of the tournament`,
                 `${lead.player} pulling clear in the Golden Ball reckoning`,
                 `All-round brilliance has ${lead.player} leading the pack`,
@@ -372,7 +373,7 @@ export function buildBulletin(data: TournamentData): BulletinItem[] {
       id: `gk-${gk.id}-${gk.clean_sheets}-${gk.saves}`,
       kind: "gloves",
       tag: "Golden Glove",
-      headline: pick(`gk-${gk.id}-${gk.clean_sheets}`, [
+      headline: choose(`gk-${gk.id}-${gk.clean_sheets}`, [
         `${gk.player_name} is building a wall in goal`,
         `${gk.clean_sheets} shut-out${gk.clean_sheets === 1 ? "" : "s"} and counting for ${gk.player_name}`,
         `${gk.player_name} keeps making the difference between the sticks`,
@@ -391,7 +392,7 @@ export function buildBulletin(data: TournamentData): BulletinItem[] {
       kind: "preview",
       tag: "Up next",
       matchId: next.id,
-      headline: pick(`prev-${next.id}`, [
+      headline: choose(`prev-${next.id}`, [
         `${nameOf(h)} meet ${nameOf(a)} with plenty at stake`,
         `All eyes on ${nameOf(h)} vs ${nameOf(a)}`,
         `${nameOf(a)} travel to face ${nameOf(h)} in the ${stageNoun(next.stage)}`,
@@ -401,5 +402,7 @@ export function buildBulletin(data: TournamentData): BulletinItem[] {
     });
   }
 
-  return items;
+  return items
+    .sort((a, b) => hash(`${edition}:${a.id}`) - hash(`${edition}:${b.id}`))
+    .map((item, index) => ({ ...item, lead: index === 0 }));
 }

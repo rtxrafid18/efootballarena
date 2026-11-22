@@ -2,8 +2,10 @@ import { createFileRoute } from "@tanstack/react-router";
 import { AppLayout, PageHeader } from "@/components/layout/AppLayout";
 import { useTournament } from "@/hooks/useTournament";
 import { topScorers, goldenBall } from "@/lib/tournament";
-import { Trophy } from "lucide-react";
+import type { Team } from "@/lib/tournament";
+import { Award, Crosshair, Footprints, Hand, type LucideIcon } from "lucide-react";
 import type { ReactNode } from "react";
+import { PlayerAvatar } from "@/components/players/PlayerAvatar";
 
 export const Route = createFileRoute("/awards")({
   head: () => ({
@@ -12,6 +14,8 @@ export const Route = createFileRoute("/awards")({
       { name: "description", content: "Golden Boot, Golden Ball, Top Assists and Golden Glove rankings — auto-calculated." },
       { property: "og:title", content: "Awards — eFootball Cup" },
       { property: "og:description", content: "Individual tournament awards." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: AwardsPage,
@@ -50,7 +54,7 @@ function AwardsPage() {
           title="Golden Boot"
           subtitle="Top scorer · auto from goal events"
           accent="gold"
-          emoji="👟"
+          icon={Footprints}
         >
           <RankList
             rows={scorers.slice(0, 10).map((s) => ({
@@ -58,6 +62,7 @@ function AwardsPage() {
               sub: s.team?.name ?? "",
               value: s.goals,
               unit: "goals",
+              team: s.team,
             }))}
           />
         </AwardCard>
@@ -66,7 +71,7 @@ function AwardsPage() {
           title="Golden Ball"
           subtitle="Best overall · G×4 + A×3 + CS×2 + MVP×5"
           accent="maroon"
-          emoji="⭐"
+          icon={Award}
         >
           <RankList
             rows={balls.slice(0, 10).map((s) => ({
@@ -75,22 +80,24 @@ function AwardsPage() {
               value: s.score,
               unit: "pts",
               breakdown: `${s.goals}G · ${s.assists}A · ${s.clean_sheets}CS · ${s.mvps}MVP`,
+              team: s.team,
             }))}
           />
         </AwardCard>
 
-        <AwardCard title="Top Assists" subtitle="Admin-maintained" accent="gold" emoji="🎯">
+        <AwardCard title="Top Assists" subtitle="Admin-maintained" accent="gold" icon={Crosshair}>
           <RankList
             rows={assists.slice(0, 10).map((s) => ({
               name: s.player_name,
               sub: (s.team_id && teamById.get(s.team_id)?.name) || "",
               value: s.assists,
               unit: "assists",
+              team: s.team_id ? teamById.get(s.team_id) ?? null : null,
             }))}
           />
         </AwardCard>
 
-        <AwardCard title="Golden Glove" subtitle="Best goalkeeper · admin-maintained" accent="maroon" emoji="🧤">
+        <AwardCard title="Golden Glove" subtitle="Best goalkeeper · admin-maintained" accent="maroon" icon={Hand}>
           <RankList
             rows={gks.slice(0, 10).map((s) => ({
               name: s.player_name,
@@ -98,6 +105,7 @@ function AwardsPage() {
               value: s.clean_sheets,
               unit: "CS",
               breakdown: `${s.saves} saves`,
+              team: s.team_id ? teamById.get(s.team_id) ?? null : null,
             }))}
           />
         </AwardCard>
@@ -109,23 +117,23 @@ function AwardsPage() {
 function AwardCard({
   title,
   subtitle,
-  emoji,
+  icon: Icon,
   accent,
   children,
 }: {
   title: string;
   subtitle: string;
-  emoji: string;
+  icon: LucideIcon;
   accent: "gold" | "maroon";
   children: ReactNode;
 }) {
   return (
     <div className="card-elevated overflow-hidden">
       <div className={`px-5 py-4 flex items-center gap-3 ${accent === "gold" ? "gold-gradient text-accent-foreground" : "maroon-gradient text-primary-foreground"}`}>
-        <div className="text-3xl">{emoji}</div>
+        <Icon className="h-8 w-8 shrink-0" strokeWidth={1.6} aria-hidden="true" />
         <div className="flex-1">
           <div className="font-bold text-lg leading-tight flex items-center gap-2">
-            <Trophy className="h-4 w-4" /> {title}
+            {title}
           </div>
           <div className="text-xs opacity-90">{subtitle}</div>
         </div>
@@ -138,14 +146,14 @@ function AwardCard({
 function RankList({
   rows,
 }: {
-  rows: { name: string; sub: string; value: number; unit: string; breakdown?: string }[];
+  rows: { name: string; sub: string; value: number; unit: string; breakdown?: string; team: Team | null }[];
 }) {
   if (rows.length === 0)
     return <div className="text-sm text-muted-foreground text-center py-6">No data yet</div>;
   return (
     <ol className="space-y-2">
       {rows.map((r, i) => (
-        <li key={i} className="flex items-center gap-3">
+        <li key={`${r.name}-${r.team?.id ?? ""}`} className="flex items-center gap-3">
           <span
             className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${
               i === 0
@@ -157,6 +165,7 @@ function RankList({
           >
             {i + 1}
           </span>
+          <PlayerAvatar name={r.name} team={r.team} size="sm" />
           <div className="flex-1 min-w-0">
             <div className="truncate font-medium text-sm">{r.name}</div>
             <div className="truncate text-[11px] text-muted-foreground">

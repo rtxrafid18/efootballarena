@@ -2,7 +2,7 @@ import { createFileRoute, Link, useParams } from "@tanstack/react-router";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { useTournament } from "@/hooks/useTournament";
 import { TeamBadge } from "@/components/team/TeamBadge";
-import { stageLabel } from "@/lib/tournament";
+import { aggregateScore, matchWinner, stageLabel } from "@/lib/tournament";
 import { ArrowLeft } from "lucide-react";
 
 export const Route = createFileRoute("/matches/$matchId")({
@@ -12,6 +12,8 @@ export const Route = createFileRoute("/matches/$matchId")({
       { name: "description", content: "Full match details, goals timeline, MVP and penalty results." },
       { property: "og:title", content: "Match Details — eFootball Cup" },
       { property: "og:description", content: "Full match details, goals timeline, MVP and penalty results." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: MatchDetailPage,
@@ -54,6 +56,9 @@ function MatchDetailPage() {
   const penWinner = hasPens
     ? (match.home_pens ?? 0) > (match.away_pens ?? 0) ? home : away
     : null;
+  const aggregate = aggregateScore(match, data.matches);
+  const advancingTeam = matchWinner(match, data.teams, data.matches);
+  const otherLeg = aggregate?.legs.find((leg) => leg.id !== match.id) ?? null;
 
   const isLive = match.status === "live";
   const isFinished = match.status === "finished";
@@ -66,7 +71,7 @@ function MatchDetailPage() {
 
       <div className="card-elevated overflow-hidden">
         <div className="flex items-center justify-between px-6 pt-4 pb-2 text-xs uppercase tracking-widest text-muted-foreground">
-          <span>{stageLabel[match.stage]}</span>
+          <span>{stageLabel[match.stage]}{aggregate ? ` · Tie ${match.bracket_slot} · Leg ${match.leg_number}` : ""}</span>
           {isLive && (
             <span className="inline-flex items-center gap-1.5 rounded-full bg-[color-mix(in_oklab,var(--live)_20%,transparent)] px-2 py-0.5 text-[10px] font-bold text-[var(--live)]">
               <span className="live-dot inline-block h-1.5 w-1.5 rounded-full bg-[var(--live)]" /> LIVE
@@ -92,6 +97,26 @@ function MatchDetailPage() {
           </div>
           <div className="text-center md:text-right"><TeamBadgeLg team={away} align="center" /></div>
         </div>
+
+        {aggregate && (
+          <div className="mx-6 mb-4 flex flex-wrap items-center justify-center gap-2 border-y border-border/60 py-3 text-xs text-muted-foreground">
+            <span className="font-semibold uppercase tracking-wider">Aggregate</span>
+            <span className="font-display text-base font-extrabold tabular-nums text-foreground">
+              {home?.short_name ?? home?.name ?? "TBD"} {aggregate.homeScore}–{aggregate.awayScore} {away?.short_name ?? away?.name ?? "TBD"}
+            </span>
+            <span>{aggregate.complete ? "Tie complete" : "Awaiting both legs"}</span>
+            {advancingTeam && <span className="text-accent">· {advancingTeam.name} advance</span>}
+            {otherLeg && (
+              <Link
+                to="/matches/$matchId"
+                params={{ matchId: otherLeg.id }}
+                className="text-accent hover:underline"
+              >
+                Open leg {otherLeg.leg_number}
+              </Link>
+            )}
+          </div>
+        )}
 
         {penWinner && (
           <div className="mx-6 mb-4 rounded-md gold-gradient text-accent-foreground px-4 py-2 text-center text-sm font-bold">

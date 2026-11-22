@@ -4,7 +4,7 @@ import { AppLayout, PageHeader } from "@/components/layout/AppLayout";
 import { useTournament } from "@/hooks/useTournament";
 import { MatchCard } from "@/components/match/MatchCard";
 import type { Match, MatchStage, Team } from "@/lib/tournament";
-import { stageLabel } from "@/lib/tournament";
+import { matchWinner, stageLabel, supportsTwoLegs } from "@/lib/tournament";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/knockout")({
@@ -31,7 +31,7 @@ function useAdvancementFx(matches: Match[] | undefined, teams: Team[] | undefine
   useEffect(() => {
     if (!matches || !teams) return;
     const current = new Map<string, string | null>();
-    for (const m of matches) current.set(m.id, winnerOf(m, teams)?.id ?? null);
+    for (const m of matches) current.set(m.id, winnerOf(m, teams, matches)?.id ?? null);
 
     const before = prev.current;
     prev.current = current;
@@ -71,14 +71,12 @@ function KnockoutPage() {
 
   const stages = BRACKET_STAGES.map((stage) => ({
     stage,
-    list: data.matches
-      .filter((m) => m.stage === stage)
-      .sort((a, b) => (a.bracket_slot ?? 0) - (b.bracket_slot ?? 0)),
+    list: groupBracketTies(stage, data.matches.filter((m) => m.stage === stage)),
   })).filter((s) => s.list.length > 0);
 
   const thirdPlace = data.matches.find((m) => m.stage === "3rd") ?? null;
   const finalMatch = data.matches.find((m) => m.stage === "final") ?? null;
-  const champion = winnerOf(finalMatch, data.teams);
+  const champion = winnerOf(finalMatch, data.teams, data.matches);
 
 
   if (stages.length === 0 && !thirdPlace) {
@@ -143,28 +141,34 @@ function KnockoutPage() {
                 <div className={cn("bk-body", !isLastCol && "bk-body--linked")}>
                   {pairs.map((pair, pi) => (
                     <div key={pi} className={cn("bk-pair", pair.length === 2 && "bk-pair--joined")}>
-                      {pair.map((m, ni) => {
+                      {pair.map((tie, ni) => {
                         const idx = pi * 2 + ni;
                         const arriving =
                           feeders.length > 0 &&
-                          [feeders[idx * 2], feeders[idx * 2 + 1]].some(
-                            (f) => f && advancing.has(f.id),
+                          [feeders[idx * 2], feeders[idx * 2 + 1]].some((feeder) =>
+                            feeder?.matches.some((m) => advancing.has(m.id)),
                           );
                         return (
                           <div
-                            key={m.id}
+                            key={tie.id}
                             className={cn(
                               "bk-node",
-                              advancing.has(m.id) && "bk-node--advancing",
-                              arriving && !advancing.has(m.id) && "bk-node--arriving",
+                              tie.matches.some((m) => advancing.has(m.id)) && "bk-node--advancing",
+                              arriving && !tie.matches.some((m) => advancing.has(m.id)) && "bk-node--arriving",
                             )}
                           >
-                            <MatchCard
-                              match={m}
-                              teams={data.teams}
-                              goals={data.goals}
-                              compact
-                            />
+                            <div className="space-y-2">
+                              {tie.matches.map((m) => (
+                                <MatchCard
+                                  key={m.id}
+                                  match={m}
+                                  teams={data.teams}
+                                  goals={data.goals}
+                                  relatedMatches={data.matches}
+                                  compact
+                                />
+                              ))}
+                            </div>
                           </div>
                         );
                       })}
@@ -208,13 +212,24 @@ function chunkPairs<T>(list: T[]): T[][] {
   return out;
 }
 
-function winnerOf(match: Match | null, teams: Team[]): Team | null {
-  if (!match || match.status !== "finished") return null;
-  const { home_team_id, away_team_id, home_score, away_score, home_pens, away_pens } = match;
-  let winnerId: string | null = null;
-  if (home_score > away_score) winnerId = home_team_id;
-  else if (away_score > home_score) winnerId = away_team_id;
-  else if (home_pens !== null && away_pens !== null)
-    winnerId = home_pens > away_pens ? home_team_id : away_team_id;
-  return teams.find((t) => t.id === winnerId) ?? null;
+type BracketTie = { id: string; matches: Match[] };
+
+function groupBracketTies(stage: MatchStage, matches: Match[]): BracketTie[] {
+  const ties = new Map<string, Match[]>();
+  for (const match of matches.sort((a, b) =>
+    (a.bracket_slot ?? Number.MAX_SAFE_INTEGER) - (b.bracket_slot ?? Number.MAX_SAFE_INTEGER) ||
+    a.leg_number - b.leg_number,
+  )) {
+    const id = supportsTwoLegs(stage) && match.bracket_slot !== null
+      ? `tie-${match.bracket_slot}`
+      : `match-${match.id}`;
+    const fixtures = ties.get(id) ?? [];
+    fixtures.push(match);
+    ties.set(id, fixtures);
+  }
+  return Array.from(ties, ([id, fixtures]) => ({ id, matches: fixtures }));
+}
+
+function winnerOf(match: Match | null, teams: Team[], matches: Match[]): Team | null {
+  return matchWinner(match, teams, matches);
 }

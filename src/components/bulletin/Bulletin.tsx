@@ -1,18 +1,31 @@
 import { Link } from "@tanstack/react-router";
-import { Newspaper, Radio } from "lucide-react";
+import {
+  BarChart3,
+  CalendarDays,
+  CircleDot,
+  Footprints,
+  Hand,
+  Newspaper,
+  Radio,
+  Star,
+  Target,
+  Trophy,
+  Zap,
+  type LucideIcon,
+} from "lucide-react";
 import type { BulletinItem, BulletinKind } from "@/lib/bulletin";
 
-const ICON: Record<BulletinKind, string> = {
-  champion: "🏆",
-  boot: "👟",
-  ball: "⭐",
-  gloves: "🧤",
-  hattrick: "🎩",
-  upset: "💥",
-  standings: "📊",
-  preview: "📅",
-  result: "⚽",
-  live: "🔴",
+const ICON: Record<BulletinKind, LucideIcon> = {
+  champion: Trophy,
+  boot: Footprints,
+  ball: Star,
+  gloves: Hand,
+  hattrick: Target,
+  upset: Zap,
+  standings: BarChart3,
+  preview: CalendarDays,
+  result: CircleDot,
+  live: Radio,
 };
 
 const ACCENT: Record<BulletinKind, string> = {
@@ -71,8 +84,11 @@ export function Bulletin({ items }: { items: BulletinItem[] }) {
       {/* lead story */}
       <Wrap item={lead}>
         <article className="relative px-5 py-6 border-b border-border/60 overflow-hidden group">
-          <div className="absolute inset-0 opacity-[0.07] pointer-events-none text-[9rem] leading-none font-display font-black select-none -right-6 top-0 text-accent">
-            {ICON[lead.kind]}
+          <div className="absolute inset-0 opacity-[0.07] pointer-events-none -right-6 top-0 text-accent" aria-hidden="true">
+            {(() => {
+              const Icon = ICON[lead.kind];
+              return <Icon className="h-40 w-40" strokeWidth={1} />;
+            })()}
           </div>
           <div className="relative">
             <div className="flex items-center gap-2 mb-2">
@@ -104,11 +120,14 @@ export function Bulletin({ items }: { items: BulletinItem[] }) {
               <article className="flex items-start gap-3 px-5 py-4 transition-colors duration-300 hover:bg-surface-2/60 group">
                 <span
                   className={
-                    "mt-0.5 grid place-items-center h-8 w-8 shrink-0 rounded-lg text-[14px] " +
+                    "mt-0.5 grid place-items-center h-8 w-8 shrink-0 rounded-lg " +
                     ACCENT[item.kind]
                   }
                 >
-                  {ICON[item.kind]}
+                  {(() => {
+                    const Icon = ICON[item.kind];
+                    return <Icon className="h-4 w-4" strokeWidth={1.8} />;
+                  })()}
                 </span>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2 flex-wrap">

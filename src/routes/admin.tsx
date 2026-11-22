@@ -19,6 +19,8 @@ export const Route = createFileRoute("/admin")({
       { name: "description", content: "Manage teams, matches, goals, MVPs and player stats." },
       { property: "og:title", content: "Admin — eFootball Cup" },
       { property: "og:description", content: "Tournament administration." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: AdminPage,

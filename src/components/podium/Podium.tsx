@@ -1,6 +1,8 @@
 import { TeamBadge } from "@/components/team/TeamBadge";
-import type { TournamentData } from "@/lib/tournament";
+import { PlayerAvatar } from "@/components/players/PlayerAvatar";
+import type { Team, TournamentData } from "@/lib/tournament";
 import { tournamentPodium } from "@/lib/tournament";
+import { Footprints, Medal, Trophy, type LucideIcon } from "lucide-react";
 
 export function Podium({ data }: { data: TournamentData }) {
   const { champion, runnerUp, third, best, boot, finalMatch } = tournamentPodium(data);
@@ -18,7 +20,7 @@ export function Podium({ data }: { data: TournamentData }) {
       <div className="absolute inset-x-0 top-0 h-[2px] ribbon-strip" />
       <div className="px-5 pt-6 pb-5 text-center border-b border-border/60">
         <div className="eyebrow opacity-70">Final standings</div>
-        <div className="text-4xl mt-3 mb-2 float-y">🏆</div>
+        <Trophy className="h-9 w-9 mx-auto mt-3 mb-2 text-accent float-y" aria-hidden="true" />
         <h2 className="font-display text-2xl sm:text-3xl font-extrabold uppercase tracking-tight">
           {champion.name} are champions
         </h2>
@@ -31,27 +33,29 @@ export function Podium({ data }: { data: TournamentData }) {
       </div>
 
       <div className="grid sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-border/60">
-        <PodiumSlot rank="1st" label="Champion" medal="🥇" team={champion} highlight />
-        <PodiumSlot rank="2nd" label="Runners-up" medal="🥈" team={runnerUp} />
-        <PodiumSlot rank="3rd" label="Third place" medal="🥉" team={third} />
+        <PodiumSlot rank="1st" label="Champion" icon={Trophy} team={champion} highlight />
+        <PodiumSlot rank="2nd" label="Runners-up" icon={Medal} team={runnerUp} />
+        <PodiumSlot rank="3rd" label="Third place" icon={Medal} team={third} />
       </div>
 
       {(best || boot) && (
         <div className="grid sm:grid-cols-2 border-t border-border/60 divide-y sm:divide-y-0 sm:divide-x divide-border/60">
           {best && (
             <AwardSlot
-              emoji="⭐"
+              icon={Trophy}
               label="Player of the tournament"
               name={best.player}
               sub={`${best.team?.name ?? ""} · ${best.goals}G ${best.assists}A · ${best.score} pts`}
+              team={best.team}
             />
           )}
           {boot && (
             <AwardSlot
-              emoji="👟"
+              icon={Footprints}
               label="Golden Boot"
               name={boot.player}
               sub={`${boot.team?.name ?? ""} · ${boot.goals} goals`}
+              team={boot.team}
             />
           )}
         </div>
@@ -63,14 +67,14 @@ export function Podium({ data }: { data: TournamentData }) {
 function PodiumSlot({
   rank,
   label,
-  medal,
+  icon: Icon,
   team,
   highlight,
 }: {
   rank: string;
   label: string;
-  medal: string;
-  team: { id: string; name: string; short_name: string | null; logo_url: string | null; group_id: string | null } | null;
+  icon: LucideIcon;
+  team: Team | null;
   highlight?: boolean;
 }) {
   return (
@@ -80,7 +84,7 @@ function PodiumSlot({
         (highlight ? "bg-[color-mix(in_oklab,var(--accent)_10%,transparent)]" : "hover:bg-surface-2/60")
       }
     >
-      <span className="text-xl leading-none">{medal}</span>
+      <Icon className="h-5 w-5 shrink-0 text-accent" aria-hidden="true" />
       <div className="min-w-0 flex-1">
         <div className="text-[9px] font-extrabold uppercase tracking-[0.18em] text-accent/90">
           {rank} · {label}
@@ -94,21 +98,24 @@ function PodiumSlot({
 }
 
 function AwardSlot({
-  emoji,
+  icon: Icon,
   label,
   name,
   sub,
+  team,
 }: {
-  emoji: string;
+  icon: LucideIcon;
   label: string;
   name: string;
   sub: string;
+  team: Team | null;
 }) {
   return (
     <div className="flex items-center gap-3 px-5 py-4">
       <div className="h-9 w-9 rounded-lg gold-frame grid place-items-center text-base shrink-0">
-        {emoji}
+        <Icon className="h-4 w-4 text-accent" aria-hidden="true" />
       </div>
+      <PlayerAvatar name={name} team={team} size="sm" />
       <div className="min-w-0">
         <div className="text-[9px] font-extrabold uppercase tracking-[0.18em] text-accent/90">
           {label}

@@ -6,6 +6,10 @@ import { Bulletin } from "@/components/bulletin/Bulletin";
 import { Podium } from "@/components/podium/Podium";
 import { buildBulletin } from "@/lib/bulletin";
 import { topScorers, goldenBall, participatingTeams } from "@/lib/tournament";
+import { PlayerAvatar } from "@/components/players/PlayerAvatar";
+import type { Team } from "@/lib/tournament";
+import { Footprints, Star, type LucideIcon } from "lucide-react";
+import { useEffect, useState } from "react";
 
 
 export const Route = createFileRoute("/")({
@@ -15,6 +19,8 @@ export const Route = createFileRoute("/")({
       { name: "description", content: "Live scores, group standings, brackets and player awards for the eFootball tournament." },
       { property: "og:title", content: "eFootball Cup — Live Tournament Center" },
       { property: "og:description", content: "Live scores, group standings, brackets and player awards for the eFootball tournament." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: HomePage,
@@ -22,6 +28,19 @@ export const Route = createFileRoute("/")({
 
 function HomePage() {
   const { data, isLoading } = useTournament();
+  const [edition, setEdition] = useState(0);
+
+  useEffect(() => {
+    const storageKey = "efootball-bulletin-edition";
+    try {
+      const previous = Number(window.localStorage.getItem(storageKey)) || 0;
+      const next = previous + 1;
+      window.localStorage.setItem(storageKey, String(next));
+      setEdition(next);
+    } catch {
+      setEdition(Math.floor(Date.now() / 1000));
+    }
+  }, []);
 
   if (isLoading || !data) {
     return (
@@ -46,7 +65,7 @@ function HomePage() {
   const upcoming = data.matches.filter((m) => m.status === "scheduled").slice(0, 4);
   const scorers = topScorers(data.goals, data.teams).slice(0, 5);
   const balls = goldenBall(data).slice(0, 5);
-  const bulletin = buildBulletin(data);
+  const bulletin = buildBulletin(data, edition);
   const thirdPlace = data.matches.find((m) => m.stage === "3rd") ?? null;
   const teamsInPlay = participatingTeams(data);
 
@@ -101,7 +120,7 @@ function HomePage() {
           <SectionTitle title="Live now" tone="live" />
           <div className="grid gap-3.5 md:grid-cols-2 stagger-flip">
             {live.map((m) => (
-              <MatchCard key={m.id} match={m} teams={data.teams} goals={data.goals} />
+              <MatchCard key={m.id} match={m} teams={data.teams} goals={data.goals} relatedMatches={data.matches} />
             ))}
           </div>
         </section>
@@ -114,7 +133,7 @@ function HomePage() {
               <SectionTitle title="Latest results" link={{ to: "/matches", label: "All matches" }} />
               <div className="grid gap-3.5 md:grid-cols-2 stagger-flip">
                 {recent.map((m) => (
-                  <MatchCard key={m.id} match={m} teams={data.teams} goals={data.goals} />
+                  <MatchCard key={m.id} match={m} teams={data.teams} goals={data.goals} relatedMatches={data.matches} />
                 ))}
               </div>
             </div>
@@ -124,7 +143,7 @@ function HomePage() {
               <SectionTitle title="Upcoming" link={{ to: "/matches", label: "Schedule" }} />
               <div className="grid gap-3.5 md:grid-cols-2 stagger-flip">
                 {upcoming.map((m) => (
-                  <MatchCard key={m.id} match={m} teams={data.teams} goals={data.goals} compact />
+                  <MatchCard key={m.id} match={m} teams={data.teams} goals={data.goals} relatedMatches={data.matches} compact />
                 ))}
               </div>
             </div>
@@ -133,7 +152,7 @@ function HomePage() {
             <div>
               <SectionTitle title="3rd place play-off" />
               <div className="grid gap-3.5 md:grid-cols-2 stagger-flip">
-                <MatchCard match={thirdPlace} teams={data.teams} goals={data.goals} />
+                <MatchCard match={thirdPlace} teams={data.teams} goals={data.goals} relatedMatches={data.matches} />
               </div>
             </div>
           )}
@@ -155,21 +174,23 @@ function HomePage() {
           <LeaderCard
             title="Golden Boot"
             subtitle="Top scorers"
-            emoji="👟"
+            icon={Footprints}
             rows={scorers.map((s) => ({
               name: s.player,
               sub: s.team?.name ?? "",
               value: s.goals,
+              team: s.team,
             }))}
           />
           <LeaderCard
             title="Golden Ball"
             subtitle="Best overall player"
-            emoji="⭐"
+            icon={Star}
             rows={balls.map((s) => ({
               name: s.player,
               sub: s.team?.name ?? "",
               value: s.score,
+              team: s.team,
             }))}
           />
         </aside>
@@ -213,20 +234,20 @@ function SectionTitle({
 function LeaderCard({
   title,
   subtitle,
-  emoji,
+  icon: Icon,
   rows,
 }: {
   title: string;
   subtitle: string;
-  emoji: string;
-  rows: { name: string; sub: string; value: number }[];
+  icon: LucideIcon;
+  rows: { name: string; sub: string; value: number; team: Team | null }[];
 }) {
   return (
     <div className="card-elevated lift p-5 overflow-hidden">
       <div className="absolute inset-x-0 top-0 h-[2px] ribbon-strip opacity-50" />
       <div className="flex items-center gap-3 mb-4">
         <div className="h-9 w-9 rounded-lg gold-frame flex items-center justify-center text-base">
-          {emoji}
+          <Icon className="h-4 w-4 text-accent" aria-hidden="true" />
         </div>
         <div>
           <div className="font-display text-sm font-extrabold uppercase tracking-[0.12em]">
@@ -243,7 +264,7 @@ function LeaderCard({
         <ol className="stagger-rank space-y-1">
           {rows.map((r, i) => (
             <li
-              key={i}
+              key={`${r.name}-${r.team?.id ?? ""}`}
               className="flex items-center gap-3 text-sm rounded-lg px-2 py-2 -mx-2 transition-colors duration-300 hover:bg-surface-2/70"
             >
               <span
@@ -256,6 +277,7 @@ function LeaderCard({
               >
                 {i + 1}
               </span>
+              <PlayerAvatar name={r.name} team={r.team} size="sm" />
               <div className="flex-1 min-w-0">
                 <div className="truncate font-semibold">{r.name}</div>
                 {r.sub && (
